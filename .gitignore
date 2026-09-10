@@ -1,0 +1,4 @@
+www/
+.cache/
+node_modules/
+*.log
