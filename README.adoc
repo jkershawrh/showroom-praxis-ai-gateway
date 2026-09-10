@@ -2,6 +2,8 @@
 
 This repository contains one progressive Showroom lab with three tracks: governed access, platform operations, and industry-sensitive governance. Track 1 is also published independently as the short quickstart experience.
 
+The repository remains private during development. RHPDS provisioning and learner environments therefore require authorized GitHub access until the content is approved for broader publication.
+
 The model is accessed through shared MaaS only because RHDP labs require practical shared inference. MaaS is not taught as the Praxis architecture or production destination.
 
 == Build locally
