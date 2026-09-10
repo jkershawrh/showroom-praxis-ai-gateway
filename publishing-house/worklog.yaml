@@ -2,6 +2,12 @@ entries:
   - date: "2026-09-10"
     stage: integration
     summary: >-
+      Replaced the obsolete theme and copied header overrides with the current
+      neutral RHDP Showroom theme v2.0.3. This lab is not Summit or AnsibleFest
+      content and now inherits the standard RHDP branding.
+  - date: "2026-09-10"
+    stage: integration
+    summary: >-
       Aligned the Antora component name and unversioned output with the working
       Build an AI Agent Showroom and Nookbag's default unversioned modules path,
       fixing the content-server 404. The repository was already public.

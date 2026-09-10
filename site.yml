@@ -9,9 +9,8 @@ content:
       start_path: content
 ui:
   bundle:
-    url: https://github.com/rhpds/showroom_theme_rhdp/releases/latest/download/ui-bundle.zip
+    url: https://github.com/rhpds/rhdp_showroom_theme/releases/download/v2.0.3/ui-bundle.zip
     snapshot: true
-  supplemental_files: content/supplemental-ui
 asciidoc:
   attributes:
     experimental: true

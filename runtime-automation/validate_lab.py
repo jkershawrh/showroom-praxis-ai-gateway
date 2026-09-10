@@ -50,6 +50,10 @@ ui = yaml.safe_load((ROOT / "ui-config.yml").read_text())
 require({tab["name"] for tab in ui["tabs"]} == {"Terminal", "App UI", "OCP Console"}, "UI tabs are incomplete")
 antora_component = yaml.safe_load((ROOT / "content/antora.yml").read_text())
 require(antora_component["name"] == "modules" and antora_component["version"] is None, "Antora component must match Nookbag's default unversioned modules content path")
+for playbook_name in ("site.yml", "default-site.yml"):
+    playbook = yaml.safe_load((ROOT / playbook_name).read_text())
+    require(playbook["ui"]["bundle"]["url"].endswith("/rhdp_showroom_theme/releases/download/v2.0.3/ui-bundle.zip"), f"{playbook_name} must use the standard RHDP Showroom theme")
+    require("supplemental_files" not in playbook["ui"], f"{playbook_name} must not override the standard RHDP header")
 
 catalog_text = (ROOT / "catalog/common.yaml").read_text()
 catalog = yaml.safe_load(catalog_text)
