@@ -1,0 +1,6 @@
+entries:
+  - date: "2026-09-10"
+    stage: development
+    summary: >-
+      Added Publishing House project specification, ocpv09 target, secure MaaS
+      secret flow, custom Ansible automation, GitOps deployment, and validation.

@@ -1,0 +1,7 @@
+---
+praxis_lab_namespace: "praxis-ai-gateway-{{ guid }}"
+praxis_model_base_url: ""
+praxis_model_api_key: ""
+praxis_model_name: "granite-3-2-8b-instruct"
+praxis_oauth_cookie_secret: ""
+praxis_lab_part_of: praxis-ai-gateway-lab

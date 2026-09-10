@@ -1,14 +1,16 @@
 ---
+purpose: development
+num_users: 1
+ocp4_workload_showroom_antora_enable_dev_mode: "true"
+
 __meta__:
+  access_control:
+    allow_groups:
+      - rhpds-devs
   catalog:
     display_name: "Govern AI Model Access with Praxis (Dev)"
-    labels: [dev, partner-intel]
   components:
-    - name: cluster
+    - name: openshift
       parameter_values:
-        num_users: 1
-        worker_instance_count_formula: "2"
-  deployer:
-    execution_environment: quay.io/agnosticd/ee-multicloud:chained-latest
-lifetime: 4h
-max_lifetime: 8h
+        cluster_size: multinode
+        host_ocp4_installer_version: "4.20"

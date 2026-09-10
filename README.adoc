@@ -8,13 +8,21 @@ This personal staging location is temporary because the current contributor acco
 
 The model is accessed through shared MaaS only because RHDP labs require practical shared inference. MaaS is not taught as the Praxis architecture or production destination.
 
-The catalog must provision Praxis through an automation workload that consumes `litellm_api_endpoint` and `litellm_virtual_key` directly. Those values must become an OpenShift ConfigMap and Secret without being inserted into Showroom pages or terminal command history.
+The catalog provisions model access through an RHDP `MaaSSandbox`. The custom automation consumes `maas_sandbox.credentials[0]` directly and writes the endpoint and virtual key into an OpenShift ConfigMap and Secret without inserting them into Showroom pages, user data, Argo CD parameters, or terminal history.
+
+This repository follows the Publishing House monorepo pattern:
+
+* `content/` contains the three-track Showroom lab.
+* `automation/ansible/` creates sensitive runtime configuration.
+* `automation/gitops/` deploys Praxis and the OAuth-protected learner UI.
+* `qa-automation/` contains live health and end-to-end gates.
+* `publishing-house/` records the intake specification and publication prerequisites.
 
 == Build locally
 
 [source,bash]
 ----
-npx antora default-site.yml
+npx antora site.yml
 ----
 
 == Catalog

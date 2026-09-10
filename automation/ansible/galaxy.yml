@@ -1,0 +1,12 @@
+namespace: praxis_ai_gateway
+name: automation
+version: 0.1.0
+readme: README.md
+authors:
+  - "John Kershaw <jkershaw@redhat.com>"
+description: "RHDP lifecycle automation for the Praxis AI Gateway lab."
+license:
+  - Apache-2.0
+repository: "https://github.com/jkershawrh/showroom-praxis-ai-gateway"
+dependencies:
+  kubernetes.core: ">=3.0.0"

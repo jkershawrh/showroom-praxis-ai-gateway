@@ -1,0 +1,123 @@
+project:
+  slug: "praxis-ai-gateway"
+  owner_email: "jkershaw@redhat.com"
+  content_type: "lab"
+  deployment_mode: "rhdp_published"
+  initiative_key: "ai_quickstarts"
+  showroom_type: "classic"
+  intake_type: "new"
+  automation_type: "both"
+  description: >-
+    A three-track lab that teaches platform teams to deploy, observe, and evaluate
+    Praxis AI Gateway on Red Hat OpenShift. The lab uses RHDP MaaS only as a
+    replaceable OpenAI-compatible backend and keeps backend credentials under
+    platform control.
+
+spec:
+  title: "Govern AI Model Access with Praxis"
+  learning_objectives:
+    - "Deploy an authenticated Praxis AI Gateway path on Red Hat OpenShift"
+    - "Prove backend portability and correlate requests with routing evidence"
+    - "Evaluate failure, isolation, and retention controls for sensitive industries"
+  modules:
+    - id: track-1
+      title: "Gateway foundations"
+      duration_min: 30
+      status: complete
+    - id: track-2
+      title: "Routing and observability"
+      duration_min: 30
+      status: complete
+    - id: track-3
+      title: "Industry-sensitive controls"
+      duration_min: 30
+      status: complete
+  environment:
+    platform: "ocp"
+    topology: "cnv-pool"
+    cloud_provider: "cnv"
+    max_concurrent_users: null
+    ocp_version: "4.20"
+    cluster_type: "multinode"
+    control_plane_instance_count: 3
+    control_plane_cpu: 16
+    control_plane_ram_gb: 64
+    worker_count: 0
+    worker_cpu: null
+    worker_ram_gb: null
+    worker_disk_gb: null
+    vms_per_student: []
+    aap_version: ""
+    ai_requirement: "maas"
+    ai_model_tier: "open-source"
+    ai_model_name: "granite-3-2-8b-instruct"
+    ai_justification: >-
+      An RHDP MaaSSandbox supplies replaceable model access because the lab does
+      not provision a model. MaaS is not presented as the Praxis architecture or
+      preferred production inference destination.
+    non_ga_products:
+      - "Praxis AI Gateway upstream"
+    non_ga_access_plan: >-
+      Praxis is installed from an immutable upstream image digest for this
+      educational lab and is explicitly identified as an upstream project.
+    external_services:
+      - "quay.io"
+      - "github.com"
+      - "RHDP MaaS"
+    gpu_nodes: 0
+    gpu_type: ""
+  duration_hours: 1.5
+  audience: "intermediate"
+
+development:
+  automation:
+    gitops:
+      status: complete
+    ansible:
+      status: complete
+  e2e:
+    status: complete
+  healthCheck:
+    status: complete
+
+compliance:
+  last_hard_check: null
+  hard_result: null
+
+tracking:
+  paused: false
+  pause_reason: null
+
+approval_checklist:
+  content:
+    prerequisites_verifiable: true
+    assessment_strategy: >-
+      Every track starts with a failing behavioral assertion, guides the learner
+      through the change, and ends with executable validation mapped to the
+      competency rubric.
+    catalog_gap: >-
+      Existing AI quickstarts focus on model serving, RAG, or agent applications.
+      This lab focuses on a dedicated AI gateway boundary, centralized credentials,
+      routing evidence, and regulated-industry control decisions.
+    design_overview: >-
+      One progressive lab contains three tracks. Track 1 establishes the gateway;
+      Track 2 adds portability, routing, and observability; Track 3 evaluates
+      isolation, retention, and failure policy. Python and TypeScript clients test
+      the same OpenAI-compatible contract.
+    module_summaries:
+      - title: "Gateway foundations"
+        overview: "Deploy Praxis and prove that applications do not receive the backend credential."
+      - title: "Routing and observability"
+        overview: "Switch compatible backends and correlate a request with gateway evidence."
+      - title: "Industry-sensitive controls"
+        overview: "Test failure behavior and assess isolation and retention decisions."
+    rcars_overlap_pct: 0
+    rcars_top_matches: []
+    rejections: []
+  infra:
+    peak_environments: null
+    cost_per_run_est: ""
+    provisioning_time_est: ""
+    agnosticv_base_ci: "agd-v2/ocp-cluster-cnv-pools on ocpv09"
+    approved_by: ""
+    rejections: []

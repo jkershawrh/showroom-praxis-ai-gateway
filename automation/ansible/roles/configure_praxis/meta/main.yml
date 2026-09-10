@@ -1,0 +1,10 @@
+---
+galaxy_info:
+  author: jkershaw@redhat.com
+  description: Securely configure the Praxis RHDP runtime boundary
+  license: Apache-2.0
+  min_ansible_version: "2.15"
+  galaxy_tags:
+    - openshift
+    - ai
+dependencies: []

@@ -1,74 +1,75 @@
-= Track 1: Deploy the governed gateway
+= Track 1: Establish the governed gateway
 
-You are the platform engineer for teams that currently copy model credentials into each application. Your first objective is to establish a gateway-owned boundary and prove that OpenShift, not individual client repositories, owns deployment controls.
+You are the platform engineer for teams that currently copy model credentials into each application. Your first objective is to prove that OpenShift and Praxis—not individual client repositories—own the model-access boundary.
 
 == What you will learn
 
 * Recognize the client, gateway, and backend trust boundaries
-* Observe an intentional red validation state
-* Deploy Praxis and a deterministic backend with restricted settings
+* Use a controlled red state to test the recovery contract
+* Verify GitOps reconciliation and gateway-owned credentials
 
 == See: The controlled request path
 
 image::architecture.svg[Track 1 request path through Praxis to a configured backend,link=self,window=_blank]
 
-The application sends an OpenAI-compatible request to Praxis. It does not receive the backend URL or backend credential. Praxis selects the configured backend and injects the upstream authorization value as the request crosses the gateway boundary.
+The application sends an OpenAI-compatible request to Praxis. It does not receive the backend URL or backend credential. Praxis selects the configured backend and injects authorization only as the request crosses the gateway boundary.
 
-The first deployment uses a UBI-based mock model API. This isolates gateway behavior from shared-model availability and quota, making the red/green result deterministic. The mock credential has no value outside this namespace.
+Publishing House has already created the runtime ConfigMap and Secret directly from the RHDP MaaSSandbox. Argo CD deploys Praxis and an OAuth-protected learner UI without receiving the virtual key as a Helm value.
 
-OpenShift supplies a Secret, restrictive container security contexts, an edge TLS route, and NetworkPolicies. Praxis is upstream software running on OpenShift; the lab does not represent it as a supported Red Hat product.
+Praxis is upstream software running on Red Hat OpenShift. The lab does not represent it as a supported Red Hat product. MaaS supplies a replaceable LLM because the demonstration platform shares model capacity across labs.
 
-The public route is acceptable only for the non-sensitive mock exercise. When the backend changes to MaaS, the overlay removes that route and uses namespace-authorized port forwarding until a downstream identity boundary is designed.
+== Do: Test the deployment contract
 
-== Do: Establish the boundary
-
-=== Step 1: Observe red
-
-Run validation before installing anything. A failing result proves the validator can distinguish an absent solution from a working one.
+=== Step 1: Record the green baseline
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-cd ~/praxis-lab
-PROJECT_NAME={project_name} python3 runtime-automation/track1/validate.py || true
+oc -n {project_name} wait --for=condition=Available deployment/praxis-ai deployment/praxis-ui --timeout=180s
+oc -n {project_name} get deployment,service,route,networkpolicy
 ----
 
-The JSON should contain `"state": "red"` and list missing resources.
+Both deployments should be available, and only the learner UI should have a Route.
 
-=== Step 2: Deploy the minimum solution
+=== Step 2: Create a controlled red state
 
-The solver creates a generated lab-only credential, applies the Kustomize base, and waits for the mock backend and gateway.
+Scale the gateway to zero replicas. This is safe in your single-user environment and makes the availability assertion fail for a known reason.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-cd ~/praxis-lab
-PROJECT_NAME={project_name} ./runtime-automation/track1/solve.sh
+oc -n {project_name} scale deployment/praxis-ai --replicas=0
+oc -n {project_name} wait --for=condition=Available deployment/praxis-ai --timeout=10s || echo "RED: gateway unavailable as expected"
 ----
 
-Both deployment rollouts must finish successfully.
+The timeout and `RED` message prove that the check detects the broken state.
 
-=== Step 3: Inspect the controls
+=== Step 3: Observe GitOps recovery
 
-Review workloads, the Secret reference, and the policies without printing the Secret value.
+Argo CD self-healing restores the declared replica count. Watch the Deployment return to green.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-oc -n {project_name} get deploy,service,route,networkpolicy
-oc -n {project_name} get deploy praxis-ai -o jsonpath='{.spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name}{"\n"}'
+oc -n {project_name} wait --for=condition=Available deployment/praxis-ai --timeout=180s
+oc -n {project_name} get deployment praxis-ai -o jsonpath='{.status.availableReplicas}{" available\n"}'
 ----
 
-The reference should be `model-backend-credentials`; the value itself stays hidden.
+If reconciliation takes longer than expected, inspect the application without changing its desired state.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc -n openshift-gitops get application praxis-ai-gateway-{guid}
+----
 
 === Verify
 
-Run the same validator after installation.
+Confirm that the backend credential is a Secret reference rather than a literal environment value.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-PROJECT_NAME={project_name} python3 runtime-automation/track1/validate.py
+oc -n {project_name} get deployment praxis-ai -o jsonpath='{.spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name}{"\n"}'
 ----
 
-Every check should pass and the top-level state should be `green`.
+The result must be `model-backend-credentials`. Do not retrieve or print the Secret value.
 
 == Key takeaway
 
-The gateway boundary is now an observable platform resource rather than an assumption inside application code. You also proved the validator starts red and becomes green only after the required OpenShift controls exist.
+The gateway boundary is an observable, reconciled platform resource. The red/green exercise proves both the availability assertion and GitOps recovery, while the deployment definition proves that application configuration contains only a Secret reference.

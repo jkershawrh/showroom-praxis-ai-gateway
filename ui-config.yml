@@ -9,6 +9,6 @@ tabs:
     path: /wetty
     port: 443
   - name: App UI
-    url: 'https://praxis-ui-praxis-ai-gateway-${USER}.${openshift_cluster_ingress_domain}'
+    url: 'https://praxis-ui-${project_name}.${openshift_cluster_ingress_domain}'
   - name: OCP Console
     url: '${openshift_console_url}'

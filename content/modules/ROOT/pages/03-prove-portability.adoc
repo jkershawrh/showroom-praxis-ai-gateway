@@ -14,9 +14,9 @@ image::architecture.svg[Polyglot clients using one gateway contract with replace
 
 All three clients call `/v1/chat/completions` beneath `PRAXIS_BASE_URL`. None reads `MODEL_BASE_URL` or `MODEL_API_KEY`. Those variables belong to deployment automation and Praxis configuration.
 
-The RHPDS environment supplies a shared model because deploying a model separately for every learner would waste capacity. This operational constraint does not change the architectural contract. OpenShift AI or another compatible service can replace MaaS through configuration.
+The RHPDS environment supplies a model through an RHDP MaaSSandbox because deploying a model separately for every lab would waste capacity. This operational constraint does not change the architectural contract. OpenShift AI or another compatible service can replace MaaS through configuration.
 
-The RHPDS overlay also removes the mock route. A namespace user uses `oc port-forward`, so OpenShift authorization determines who may establish local access. Production exposure needs a separately tested OAuth or OpenID Connect boundary.
+Praxis has no external Route. A namespace user uses `oc port-forward`, so OpenShift authorization determines who may establish local access. The browser UI is separately protected by OpenShift OAuth and a re-encrypt Route.
 
 The clients deliberately remain small. Their purpose is to prove ownership boundaries, not to recommend three application frameworks.
 
@@ -36,7 +36,7 @@ Only `PRAXIS_BASE_URL` should appear beneath `clients/`.
 
 === Step 2: Connect to Praxis
 
-Establish local access to the mock deployment without copying its upstream credential.
+Establish local access to Praxis without copying its upstream credential.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
@@ -56,7 +56,7 @@ cd ~/praxis-lab
 python3 clients/python/client.py
 ----
 
-The response should identify `lab-model` and contain an assistant message.
+The response should identify `{maas_model}` and contain an assistant message.
 
 === Step 4: Render the RHPDS configuration safely
 
@@ -65,7 +65,7 @@ Preview a neutral configuration using placeholders; do not print a real model cr
 [source,bash,role="execute",subs="attributes+"]
 ----
 cd ~/praxis-lab
-MODEL_BASE_URL={maas_api_url} PRAXIS_MODEL={maas_model} python3 deploy/rhpds/render_config.py >/tmp/praxis-rhpds.yaml
+python3 deploy/rhpds/render_config.py --model-base-url https://replaceable-model.example/v1 --output /tmp/praxis-rhpds.yaml
 grep -E 'address:|model:|MODEL_API_KEY' /tmp/praxis-rhpds.yaml
 ----
 

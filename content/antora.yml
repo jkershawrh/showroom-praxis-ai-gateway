@@ -11,8 +11,7 @@ asciidoc:
     openshift_console_url: 'https://console-openshift-console.apps.cluster-%GUID%.%GUID%.sandbox.opentlc.com'
     openshift_cluster_ingress_domain: 'apps.cluster-%GUID%.%GUID%.sandbox.opentlc.com'
     rhoai_dashboard_url: 'https://rhods-dashboard-redhat-ods-applications.apps.cluster-%GUID%.%GUID%.sandbox.opentlc.com'
-    project_name: praxis-ai-gateway-{user}
+    project_name: praxis-ai-gateway-{guid}
     quickstart_repo: 'https://github.com/jkershawrh/praxis-ai-gateway-quickstart.git'
-    maas_api_url: 'https://litellm-prod.apps.maas.redhatworkshops.io/v1'
-    maas_model: 'granite-2b-cpu'
+    maas_model: 'granite-3-2-8b-instruct'
     intel_platform: 'Intel Xeon'

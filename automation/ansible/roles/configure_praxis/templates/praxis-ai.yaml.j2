@@ -1,0 +1,44 @@
+listeners:
+  - name: ai-gateway
+    address: "0.0.0.0:8080"
+    filter_chains:
+      - access-control
+      - model-routing
+      - upstream-credentials
+filter_chains:
+  - name: access-control
+    filters:
+      - filter: ip_acl
+        allow:
+          - "10.0.0.0/8"
+          - "172.16.0.0/12"
+          - "192.168.0.0/16"
+          - "127.0.0.1/32"
+  - name: model-routing
+    filters:
+      - filter: router
+        routes:
+          - path_prefix: "/v1/"
+            cluster: model-backend
+      - filter: headers
+        request_set:
+          - name: Host
+            value: "{{ praxis_backend_host }}"
+      - filter: load_balancer
+        clusters:
+          - name: model-backend
+            endpoints:
+              - "{{ praxis_backend_host }}:{{ praxis_backend_port }}"
+{% if praxis_backend_scheme == 'https' %}
+            tls:
+              sni: "{{ praxis_backend_host }}"
+{% endif %}
+  - name: upstream-credentials
+    filters:
+      - filter: credential_injection
+        clusters:
+          - name: model-backend
+            header: Authorization
+            env_var: MODEL_API_KEY
+            header_prefix: "Bearer "
+            strip_client_credential: true

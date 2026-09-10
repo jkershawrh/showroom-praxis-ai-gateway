@@ -1,0 +1,5 @@
+apiVersion: v2
+name: praxis-bootstrap
+description: Argo CD bootstrap application for the Praxis AI Gateway lab
+type: application
+version: 0.1.0

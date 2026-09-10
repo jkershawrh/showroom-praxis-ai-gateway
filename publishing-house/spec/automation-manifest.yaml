@@ -1,0 +1,38 @@
+approach: both
+
+infrastructure:
+  type: ocp-cnv
+  ocp_version: "4.20"
+  multi_user: false
+  users_per_deployment: 1
+  pool: ocpv09
+
+operators:
+  - Red Hat OpenShift GitOps
+  - Red Hat Build of Keycloak
+
+applications:
+  - Praxis AI Gateway
+  - Authenticated Praxis learner UI
+  - Showroom
+
+rbac:
+  - OpenShift OAuth protects the learner UI
+  - Learners receive namespace-scoped access
+
+seed_data: []
+network:
+  - Default deny for Praxis lab workloads
+  - OpenShift ingress to the OAuth proxy only
+  - Learner UI to Praxis only
+  - Praxis egress to HTTPS model backends and DNS only
+broken_resources: []
+provision_data:
+  - maas_sandbox.credentials[0].api_base_url
+  - maas_sandbox.credentials[0].virtual_key
+  - maas_sandbox.credentials[0].available_models
+notes: >-
+  The RHDP MaaSSandbox owns key creation and cleanup. MaaS is a replaceable
+  backend necessitated by the shared lab platform. Its credential is written
+  directly to an OpenShift Secret and is not passed into Showroom user data or
+  GitOps Helm values.

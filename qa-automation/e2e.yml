@@ -1,0 +1,48 @@
+---
+- name: Validate the learner-facing Praxis path
+  hosts: localhost
+  gather_facts: false
+  vars:
+    praxis_lab_namespace: "praxis-ai-gateway-{{ guid }}"
+  tasks:
+    - name: Read learner UI route
+      kubernetes.core.k8s_info:
+        api_version: route.openshift.io/v1
+        kind: Route
+        name: praxis-ui
+        namespace: "{{ praxis_lab_namespace }}"
+      register: ui_route
+
+    - name: Request learner UI without an OAuth session
+      ansible.builtin.uri:
+        url: "https://{{ ui_route.resources[0].spec.host }}/"
+        method: GET
+        follow_redirects: none
+        validate_certs: true
+        status_code:
+          - 302
+          - 303
+      register: unauthenticated_request
+
+    - name: Verify OpenShift OAuth protects the application
+      ansible.builtin.assert:
+        that:
+          - "'oauth' in unauthenticated_request.location"
+
+    - name: Read Praxis deployment definition
+      kubernetes.core.k8s_info:
+        api_version: apps/v1
+        kind: Deployment
+        name: praxis-ai
+        namespace: "{{ praxis_lab_namespace }}"
+      register: praxis_deployment
+
+    - name: Assert credential is referenced rather than embedded
+      ansible.builtin.assert:
+        that:
+          - >-
+            praxis_deployment.resources[0].spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
+            == 'model-backend-credentials'
+          - >-
+            praxis_deployment.resources[0].spec.template.spec.containers[0].env[0].value
+            is not defined

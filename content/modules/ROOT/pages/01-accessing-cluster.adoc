@@ -15,11 +15,11 @@ The result should be `{user}` or the user identity assigned by the environment.
 
 == Confirm the target project
 
-Create or select the namespace used throughout the lab. Namespace isolation prevents learners from changing each other's resources.
+Select the namespace provisioned for this lab. Publishing House created it before Showroom started.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-oc new-project {project_name} 2>/dev/null || oc project {project_name}
+oc project {project_name}
 ----
 
 Verify that the CLI now reports the expected project.
@@ -42,7 +42,7 @@ At least one worker should report `amd64`. The lab requires no accelerator becau
 
 == Obtain the source
 
-Clone the tested source so every later command uses the same configuration and validation contracts.
+Clone the tested quickstart so later exercises use the same client and validation contracts as CI. During private development, Publishing House must provide repository access; the publication workflow will move or expose the approved source location.
 
 [source,bash,role="execute",subs="attributes+"]
 ----

@@ -1,0 +1,30 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: praxis-ai-gateway
+  title: Praxis AI Gateway Lab
+  description: >-
+    A three-track RHDP lab for deploying, observing, and evaluating Praxis AI
+    Gateway on Red Hat OpenShift with a replaceable MaaS backend.
+  annotations:
+    ph.rhdp.io/content-type: lab
+    ph.rhdp.io/deployment-mode: rhdp_published
+    ph.rhdp.io/github-user: jkershawrh
+    ph.rhdp.io/owner: jkershaw@redhat.com
+    backstage.io/techdocs-ref: dir:.
+    github.com/project-slug: jkershawrh/showroom-praxis-ai-gateway
+  tags:
+    - publishing-house
+    - lab
+    - rhdp-published
+    - praxis
+    - ai-gateway
+  links:
+    - url: https://github.com/jkershawrh/showroom-praxis-ai-gateway
+      title: Repository
+      icon: github
+spec:
+  type: content
+  lifecycle: experimental
+  owner: rhdp-team
+  system: publishing-house

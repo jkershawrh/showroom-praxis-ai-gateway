@@ -1,0 +1,6 @@
+---
+- name: Configure the Praxis AI Gateway lab
+  hosts: localhost
+  gather_facts: false
+  roles:
+    - praxis_ai_gateway.automation.configure_praxis

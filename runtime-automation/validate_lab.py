@@ -21,6 +21,17 @@ require((ROOT / "ui-config.yml").is_file(), "ui-config.yml is missing")
 require((ROOT / "content/antora.yml").is_file(), "antora.yml is missing")
 require((ROOT / "content/supplemental-ui").is_dir(), "supplemental UI is missing")
 require(len(MODULES) >= 5, "at least five hands-on modules are required")
+for required in [
+    "publishing-house/spec.yaml",
+    "publishing-house/spec/automation-manifest.yaml",
+    "automation/ansible/galaxy.yml",
+    "automation/ansible/roles/configure_praxis/tasks/main.yml",
+    "automation/gitops/praxis/Chart.yaml",
+    "automation/gitops/bootstrap-infra/Chart.yaml",
+    "qa-automation/healthcheck.yml",
+    "qa-automation/e2e.yml",
+]:
+    require((ROOT / required).is_file(), f"Publishing House artifact is missing: {required}")
 
 nav = (ROOT / "content/modules/ROOT/nav.adoc").read_text()
 for target in re.findall(r"xref:([^\[]+)", nav):
@@ -40,8 +51,33 @@ require({tab["name"] for tab in ui["tabs"]} == {"Terminal", "App UI", "OCP Conso
 
 catalog = yaml.safe_load((ROOT / "catalog/common.yaml").read_text())
 require(catalog["__meta__"]["catalog"]["category"] in {"Workshops", "Demos", "Labs", "Sandboxes", "Brand_Events"}, "invalid category")
-require(catalog["__meta__"]["catalog"]["reportingLabels"]["primaryBU"] == "AI", "invalid business unit")
-workloads = [item["name"] for item in catalog["workloads"]]
-require(workloads.index("ocp4_workload_authentication") < workloads.index("ocp4_workload_litellm_virtual_keys") < workloads.index("ocp4_workload_showroom"), "invalid workload order")
+require(catalog["__meta__"]["catalog"]["reportingLabels"]["primaryBU"] == "Hybrid_Platforms", "invalid business unit")
+workloads = catalog["workloads"]
+require(all(isinstance(item, str) and item.count(".") == 2 for item in workloads), "workloads must use fully qualified collection names")
+require(workloads.index("agnosticd.core_workloads.ocp4_workload_authentication") < workloads.index("praxis_ai_gateway.automation.configure_praxis") < workloads.index("agnosticd.core_workloads.ocp4_workload_gitops_bootstrap") < workloads.index("agnosticd.showroom.ocp4_workload_showroom"), "invalid workload order")
+
+sandboxes = catalog["__meta__"].get("sandboxes", [])
+maas = [item for item in sandboxes if item.get("kind") == "MaaSSandbox"]
+require(len(maas) == 1, "exactly one RHDP MaaSSandbox is required")
+require(maas[0]["cloud_selector"]["purpose"] == "production", "MaaSSandbox must use the production selector")
+require(maas[0]["models"] == "granite-3-2-8b-instruct", "unexpected MaaS model")
+require(not any("litellm_virtual_keys" in item for item in workloads), "MaaSSandbox must own key lifecycle")
+
+user_data = catalog.get("ocp4_workload_showroom_user_data", {})
+require(not any("maas" in key.lower() or "litellm" in key.lower() or "key" in key.lower() for key in user_data), "Showroom user data must not receive MaaS credentials")
+
+ansible_tasks = (ROOT / "automation/ansible/roles/configure_praxis/tasks/main.yml").read_text()
+require(ansible_tasks.count("no_log: true") >= 3, "credential-bearing Ansible tasks must use no_log")
+
+runtime_values = yaml.safe_load((ROOT / "automation/gitops/praxis/values.yaml").read_text())
+bootstrap_values = yaml.safe_load((ROOT / "automation/gitops/bootstrap-infra/values.yaml").read_text())
+images = list(runtime_values["images"].values()) + [bootstrap_values["praxis"]["uiImage"]]
+require(all("@sha256:" in image for image in images), "all runtime images must be digest pinned")
+
+spec = yaml.safe_load((ROOT / "publishing-house/spec.yaml").read_text())
+require(spec["project"]["deployment_mode"] == "rhdp_published", "invalid Publishing House deployment mode")
+require(spec["spec"]["environment"]["topology"] == "cnv-pool", "Publishing House topology must be cnv-pool")
+require(spec["spec"]["environment"]["gpu_nodes"] == 0, "the Praxis lab must not allocate a local GPU")
+require(spec["spec"]["environment"]["ai_requirement"] == "maas", "MaaS must remain the replaceable model access mechanism")
 
 print(f"LAB PREFLIGHT: GREEN ({len(MODULES)} hands-on modules)")

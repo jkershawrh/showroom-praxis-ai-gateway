@@ -1,0 +1,104 @@
+---
+- name: Validate lifecycle action
+  ansible.builtin.assert:
+    that:
+      - ACTION | default('provision') in ['provision', 'destroy']
+    fail_msg: "ACTION must be provision or destroy"
+
+- name: Remove the Praxis lab namespace
+  kubernetes.core.k8s:
+    api_version: v1
+    kind: Namespace
+    name: "{{ praxis_lab_namespace }}"
+    state: absent
+    wait: true
+    wait_timeout: 300
+  when: ACTION | default('provision') == 'destroy'
+
+- name: Provision the Praxis runtime boundary
+  when: ACTION | default('provision') == 'provision'
+  block:
+    - name: Validate required backend values
+      ansible.builtin.assert:
+        that:
+          - praxis_model_base_url | length > 0
+          - praxis_model_api_key | length > 0
+          - praxis_model_name | length > 0
+          - praxis_oauth_cookie_secret | length >= 32
+        fail_msg: "Praxis requires the RHDP MaaS endpoint, virtual key, model, and OAuth cookie secret"
+      no_log: true
+
+    - name: Parse the OpenAI-compatible backend endpoint
+      ansible.builtin.set_fact:
+        praxis_backend_scheme: "{{ praxis_model_base_url | urlsplit('scheme') }}"
+        praxis_backend_host: "{{ praxis_model_base_url | urlsplit('hostname') }}"
+
+    - name: Select the backend network port
+      ansible.builtin.set_fact:
+        praxis_backend_port: >-
+          {{ praxis_model_base_url | urlsplit('port') | default(443 if praxis_backend_scheme == 'https' else 80, true) }}
+
+    - name: Validate backend endpoint shape
+      ansible.builtin.assert:
+        that:
+          - praxis_backend_scheme in ['http', 'https']
+          - praxis_backend_host | length > 0
+          - (praxis_model_base_url | urlsplit('path')) in ['', '/', '/v1', '/v1/']
+        fail_msg: "The MaaS endpoint must contain only http(s), host, optional port, and optional /v1"
+
+    - name: Create the Praxis namespace
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ praxis_lab_namespace }}"
+            labels:
+              app.kubernetes.io/part-of: "{{ praxis_lab_part_of }}"
+
+    - name: Store the backend key directly in OpenShift
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: model-backend-credentials
+            namespace: "{{ praxis_lab_namespace }}"
+            labels:
+              app.kubernetes.io/part-of: "{{ praxis_lab_part_of }}"
+          type: Opaque
+          stringData:
+            api-key: "{{ praxis_model_api_key }}"
+      no_log: true
+
+    - name: Store the OAuth proxy cookie secret
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: praxis-ui-proxy-cookie
+            namespace: "{{ praxis_lab_namespace }}"
+            labels:
+              app.kubernetes.io/part-of: "{{ praxis_lab_part_of }}"
+          type: Opaque
+          stringData:
+            session_secret: "{{ praxis_oauth_cookie_secret }}"
+      no_log: true
+
+    - name: Render the Praxis gateway configuration
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: praxis-ai-config
+            namespace: "{{ praxis_lab_namespace }}"
+            labels:
+              app.kubernetes.io/part-of: "{{ praxis_lab_part_of }}"
+          data:
+            praxis-ai.yaml: "{{ lookup('ansible.builtin.template', 'praxis-ai.yaml.j2') }}"

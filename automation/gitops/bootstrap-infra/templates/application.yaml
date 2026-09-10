@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: praxis-ai-gateway-{{ .Values.guid }}
+  namespace: openshift-gitops
+spec:
+  project: default
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: praxis-ai-gateway-{{ .Values.guid }}
+  source:
+    repoURL: {{ .Values.repo.url | quote }}
+    targetRevision: {{ .Values.repo.revision | quote }}
+    path: automation/gitops/praxis
+    helm:
+      parameters:
+        - name: namespace
+          value: praxis-ai-gateway-{{ .Values.guid }}
+        - name: model
+          value: {{ .Values.praxis.model | quote }}
+        - name: images.ui
+          value: {{ .Values.praxis.uiImage | quote }}
+          forceString: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
