@@ -2,6 +2,12 @@ entries:
   - date: "2026-09-10"
     stage: integration
     summary: >-
+      Injected the rendered Showroom UI configuration from AgnosticV and aligned
+      its terminal route with the deployed OpenShift terminal, preventing the
+      Nookbag "Port and url not defined" startup error.
+  - date: "2026-09-10"
+    stage: integration
+    summary: >-
       Set workshop_user_mode to none so Babylon creates a single-tenant service
       and assigns provision data directly instead of enabling multiuser services.
   - date: "2026-09-10"

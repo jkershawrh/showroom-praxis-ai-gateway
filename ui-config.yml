@@ -6,7 +6,7 @@ view_switcher:
   default_mode: split
 tabs:
   - name: Terminal
-    path: /wetty
+    path: /terminal
     port: 443
   - name: App UI
     url: 'https://praxis-ui-${project_name}.${openshift_cluster_ingress_domain}'

@@ -69,6 +69,9 @@ require(virtual_key_workload in catalog["remove_workloads"], "LiteMaaS virtual k
 require(catalog["ocp4_workload_litellm_virtual_keys_models"] == ["{{ praxis_model_name }}"], "Praxis and LiteMaaS must select the same model variable")
 require(catalog["praxis_model_base_url"] == "{{ litellm_api_endpoint }}/v1", "Praxis must consume the generated LiteMaaS endpoint")
 require(catalog["praxis_model_api_key"] == "{{ litellm_virtual_key }}", "Praxis must consume the generated virtual key")
+showroom_ui = yaml.safe_load(catalog["ocp4_workload_showroom_content_ui_config"])
+require(all(tab.get("url") or tab.get("port") for tab in showroom_ui["tabs"]), "every deployed Showroom tab must define a URL or port")
+require(catalog["ocp4_workload_showroom_terminal_type"] == "showroom", "Showroom must deploy the terminal referenced by the UI config")
 require(not catalog["ocp4_workload_litellm_virtual_keys_enable_user_info_data"], "LiteMaaS credentials must not enter user data")
 
 user_data = catalog.get("ocp4_workload_showroom_user_data", {})
