@@ -14,7 +14,7 @@ image::architecture.svg[Track 1 request path through Praxis to a configured back
 
 The application sends an OpenAI-compatible request to Praxis. It does not receive the backend URL or backend credential. Praxis selects the configured backend and injects authorization only as the request crosses the gateway boundary.
 
-Publishing House has already created the runtime ConfigMap and Secret directly from the RHDP MaaSSandbox. Argo CD deploys Praxis and an OAuth-protected learner UI without receiving the virtual key as a Helm value.
+Publishing House has already created the runtime ConfigMap and Secret from the endpoint and per-order virtual key produced by the RHDP LiteMaaS workload. Argo CD deploys Praxis and an OAuth-protected learner UI without receiving the virtual key as a Helm value.
 
 Praxis is upstream software running on Red Hat OpenShift. The lab does not represent it as a supported Red Hat product. MaaS supplies a replaceable LLM because the demonstration platform shares model capacity across labs.
 

@@ -53,6 +53,9 @@ catalog_text = (ROOT / "catalog/common.yaml").read_text()
 catalog = yaml.safe_load(catalog_text)
 require(catalog["__meta__"]["catalog"]["category"] in {"Workshops", "Demos", "Labs", "Sandboxes", "Brand_Events"}, "invalid category")
 require(catalog["__meta__"]["catalog"]["reportingLabels"]["primaryBU"] == "Hybrid_Platforms", "invalid business unit")
+component = catalog["__meta__"]["components"][0]
+require(component["item"] == "agd-v2/ocp-cluster-cnv-pools", "integration must use the generic CNV cluster component")
+require("pool" not in component.get("parameter_values", {}), "integration CI must not pin a physical pool")
 workloads = catalog["workloads"]
 require(all(isinstance(item, str) and item.count(".") == 2 for item in workloads), "workloads must use fully qualified collection names")
 virtual_key_workload = "rhpds.litellm_virtual_keys.ocp4_workload_litellm_virtual_keys"

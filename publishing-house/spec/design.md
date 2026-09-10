@@ -7,21 +7,23 @@ artifacts in this repository.
 
 ## Runtime boundary
 
-The Praxis gateway and learner UI run on Red Hat OpenShift provisioned from the
-`ocpv09` CNV pool. RHDP MaaS is consumed only through its OpenAI-compatible API.
-The lab therefore claims Intel infrastructure for its OpenShift application
-runtime, but makes no claim about the hardware behind the remote MaaS endpoint.
+The Praxis gateway and learner UI run on Red Hat OpenShift provisioned from an
+RHDP integration CNV pool selected by the reusable cluster component. RHDP MaaS
+is consumed only through its OpenAI-compatible API. This integration CI makes
+no claim about the hardware behind either the OpenShift allocation or remote
+MaaS endpoint.
 
 ## Secret flow
 
-1. RHDP provisions a `MaaSSandbox` containing an API base URL, virtual key, and
-   allowed model list.
+1. The RHDP LiteMaaS workload creates a per-order virtual key for the selected
+   model and exposes `litellm_api_endpoint` and `litellm_virtual_key` to the
+   remaining deployment workloads.
 2. The custom `configure_praxis` role writes the endpoint to a ConfigMap and the
    key to `model-backend-credentials` in the application namespace.
 3. GitOps deploys workloads that reference the existing ConfigMap and Secret.
 4. Showroom receives the authenticated UI URL, never the virtual key.
-5. The custom role removes the application namespace, while RHDP destroys the
-   MaaSSandbox and its virtual key through the sandbox lifecycle.
+5. The custom role removes the application namespace, then the LiteMaaS
+   workload revokes the virtual key during the remove-workload lifecycle.
 
 ## Image publication
 

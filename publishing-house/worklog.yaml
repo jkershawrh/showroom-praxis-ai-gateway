@@ -1,12 +1,18 @@
 entries:
   - date: "2026-09-10"
+    stage: integration
+    summary: >-
+      Aligned the common and dev CI shape with the AI Agent base CI and removed
+      physical CNV pool pinning. Integration now uses the reusable generic
+      agd-v2/ocp-cluster-cnv-pools component.
+  - date: "2026-09-10"
     stage: validation
     summary: >-
-      Replaced the unverified MaaSSandbox contract with the established RHDP
+      Replaced the unverified sandbox contract with the established RHDP
       LiteMaaS virtual-key collection and lifecycle used by current AI
       Quickstarts. Kept endpoint and key material out of Showroom and GitOps.
   - date: "2026-09-10"
     stage: development
     summary: >-
-      Added Publishing House project specification, ocpv09 target, secure MaaS
+      Added Publishing House project specification, initial CNV target, secure MaaS
       secret flow, custom Ansible automation, GitOps deployment, and validation.

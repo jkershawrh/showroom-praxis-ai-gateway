@@ -118,8 +118,6 @@ approval_checklist:
     peak_environments: null
     cost_per_run_est: ""
     provisioning_time_est: ""
-    agnosticv_base_ci: >-
-      agd-v2/ocp-cluster-cnv-pools with RHDP publication/event capacity bound
-      to ocpv09
+    agnosticv_base_ci: "agd-v2/ocp-cluster-cnv-pools (integration, unpinned)"
     approved_by: ""
     rejections: []

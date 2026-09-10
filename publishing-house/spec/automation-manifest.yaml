@@ -5,8 +5,7 @@ infrastructure:
   ocp_version: "4.20"
   multi_user: false
   users_per_deployment: 1
-  pool: ocpv09
-  pool_binding: rhdp-event-cloud-selector
+  pool: unpinned
 
 operators:
   - Red Hat OpenShift GitOps

@@ -14,7 +14,7 @@ image::architecture.svg[Polyglot clients using one gateway contract with replace
 
 All three clients call `/v1/chat/completions` beneath `PRAXIS_BASE_URL`. None reads `MODEL_BASE_URL` or `MODEL_API_KEY`. Those variables belong to deployment automation and Praxis configuration.
 
-The RHPDS environment supplies a model through an RHDP MaaSSandbox because deploying a model separately for every lab would waste capacity. This operational constraint does not change the architectural contract. OpenShift AI or another compatible service can replace MaaS through configuration.
+The RHPDS environment supplies a model through a per-order RHDP LiteMaaS virtual key because deploying a model separately for every lab would waste capacity. This operational constraint does not change the architectural contract. OpenShift AI or another compatible service can replace MaaS through configuration.
 
 Praxis has no external Route. A namespace user uses `oc port-forward`, so OpenShift authorization determines who may establish local access. The browser UI is separately protected by OpenShift OAuth and a re-encrypt Route.
 
