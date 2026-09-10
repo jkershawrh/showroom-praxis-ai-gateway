@@ -1,0 +1,28 @@
+name: Validate Showroom lab
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  showroom:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: python -m pip install 'PyYAML>=6,<7'
+      - run: python runtime-automation/validate_lab.py
+      - name: Build Antora site
+        run: >-
+          npx --yes
+          --package @antora/cli@3.1.14
+          --package @antora/site-generator@3.1.14
+          antora --fetch default-site.yml
