@@ -54,6 +54,7 @@ catalog = yaml.safe_load(catalog_text)
 require(catalog["__meta__"]["catalog"]["category"] in {"Workshops", "Demos", "Labs", "Sandboxes", "Brand_Events"}, "invalid category")
 require(catalog["__meta__"]["catalog"]["reportingLabels"]["primaryBU"] == "Hybrid_Platforms", "invalid business unit")
 require("components" not in catalog["__meta__"], "tenant integration CI must not provision a cluster component")
+require(catalog["__meta__"]["catalog"]["workshop_user_mode"] == "none", "single-tenant lab must assign provision data directly to the workshop seat")
 require(catalog["__meta__"]["sandbox_api"]["actions"]["destroy"]["catch_all"] is False, "destroy must run tenant cleanup workloads")
 dev = yaml.safe_load((ROOT / "catalog/dev.yaml").read_text())
 selector = dev["__meta__"]["sandboxes"][0]["cloud_selector"]

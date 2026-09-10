@@ -141,7 +141,9 @@ __meta__:
     display_name: "Govern AI Model Access with Praxis"
     category: Labs
     multiuser: false
-    workshop_user_mode: single
+    # Provision data is assigned directly to this single tenant's workshop seat.
+    # Babylon treats any value other than "none" as multiuserServices: true.
+    workshop_user_mode: none
     keywords:
       - ai-gateway
       - governance

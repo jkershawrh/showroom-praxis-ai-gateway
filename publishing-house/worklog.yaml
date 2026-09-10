@@ -2,6 +2,11 @@ entries:
   - date: "2026-09-10"
     stage: integration
     summary: >-
+      Set workshop_user_mode to none so Babylon creates a single-tenant service
+      and assigns provision data directly instead of enabling multiuser services.
+  - date: "2026-09-10"
+    stage: integration
+    summary: >-
       Corrected the Dev Sandbox API selector to the live registered pool label
       ai-lab-xeon6-inference after the first order exposed the stale draft label.
   - date: "2026-09-10"
