@@ -8,7 +8,7 @@ This personal staging location is temporary because the current contributor acco
 
 The model is accessed through shared MaaS only because RHDP labs require practical shared inference. MaaS is not taught as the Praxis architecture or production destination.
 
-The catalog provisions model access through an RHDP `MaaSSandbox`. The custom automation consumes `maas_sandbox.credentials[0]` directly and writes the endpoint and virtual key into an OpenShift ConfigMap and Secret without inserting them into Showroom pages, user data, Argo CD parameters, or terminal history.
+The catalog provisions model access through the standard RHDP LiteMaaS virtual-key workload used by the AI Quickstarts. The custom automation consumes `litellm_api_endpoint` and `litellm_virtual_key` directly and writes the endpoint and virtual key into an OpenShift ConfigMap and Secret without inserting them into Showroom pages, user data, Argo CD parameters, or terminal history. The virtual-key workload also owns key cleanup when the lab is destroyed.
 
 This repository follows the Publishing House monorepo pattern:
 

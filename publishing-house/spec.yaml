@@ -52,9 +52,9 @@ spec:
     ai_model_tier: "open-source"
     ai_model_name: "granite-3-2-8b-instruct"
     ai_justification: >-
-      An RHDP MaaSSandbox supplies replaceable model access because the lab does
-      not provision a model. MaaS is not presented as the Praxis architecture or
-      preferred production inference destination.
+      The RHDP LiteMaaS virtual-key workload supplies replaceable model access
+      because the lab does not provision a model. MaaS is not presented as the
+      Praxis architecture or preferred production inference destination.
     non_ga_products:
       - "Praxis AI Gateway upstream"
     non_ga_access_plan: >-
@@ -118,6 +118,8 @@ approval_checklist:
     peak_environments: null
     cost_per_run_est: ""
     provisioning_time_est: ""
-    agnosticv_base_ci: "agd-v2/ocp-cluster-cnv-pools on ocpv09"
+    agnosticv_base_ci: >-
+      agd-v2/ocp-cluster-cnv-pools with RHDP publication/event capacity bound
+      to ocpv09
     approved_by: ""
     rejections: []

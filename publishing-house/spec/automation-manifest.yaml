@@ -6,6 +6,7 @@ infrastructure:
   multi_user: false
   users_per_deployment: 1
   pool: ocpv09
+  pool_binding: rhdp-event-cloud-selector
 
 operators:
   - Red Hat OpenShift GitOps
@@ -28,11 +29,10 @@ network:
   - Praxis egress to HTTPS model backends and DNS only
 broken_resources: []
 provision_data:
-  - maas_sandbox.credentials[0].api_base_url
-  - maas_sandbox.credentials[0].virtual_key
-  - maas_sandbox.credentials[0].available_models
+  - litellm_api_endpoint
+  - litellm_virtual_key
 notes: >-
-  The RHDP MaaSSandbox owns key creation and cleanup. MaaS is a replaceable
-  backend necessitated by the shared lab platform. Its credential is written
-  directly to an OpenShift Secret and is not passed into Showroom user data or
-  GitOps Helm values.
+  The standard RHDP LiteMaaS virtual-key workload owns per-order key creation
+  and cleanup. MaaS is a replaceable backend necessitated by the shared lab
+  platform. Its credential is written directly to an OpenShift Secret and is
+  not passed into Showroom user data or GitOps Helm values.

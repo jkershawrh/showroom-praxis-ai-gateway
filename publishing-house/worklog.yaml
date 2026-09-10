@@ -1,5 +1,11 @@
 entries:
   - date: "2026-09-10"
+    stage: validation
+    summary: >-
+      Replaced the unverified MaaSSandbox contract with the established RHDP
+      LiteMaaS virtual-key collection and lifecycle used by current AI
+      Quickstarts. Kept endpoint and key material out of Showroom and GitOps.
+  - date: "2026-09-10"
     stage: development
     summary: >-
       Added Publishing House project specification, ocpv09 target, secure MaaS

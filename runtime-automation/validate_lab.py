@@ -49,19 +49,21 @@ for module in MODULES:
 ui = yaml.safe_load((ROOT / "ui-config.yml").read_text())
 require({tab["name"] for tab in ui["tabs"]} == {"Terminal", "App UI", "OCP Console"}, "UI tabs are incomplete")
 
-catalog = yaml.safe_load((ROOT / "catalog/common.yaml").read_text())
+catalog_text = (ROOT / "catalog/common.yaml").read_text()
+catalog = yaml.safe_load(catalog_text)
 require(catalog["__meta__"]["catalog"]["category"] in {"Workshops", "Demos", "Labs", "Sandboxes", "Brand_Events"}, "invalid category")
 require(catalog["__meta__"]["catalog"]["reportingLabels"]["primaryBU"] == "Hybrid_Platforms", "invalid business unit")
 workloads = catalog["workloads"]
 require(all(isinstance(item, str) and item.count(".") == 2 for item in workloads), "workloads must use fully qualified collection names")
-require(workloads.index("agnosticd.core_workloads.ocp4_workload_authentication") < workloads.index("praxis_ai_gateway.automation.configure_praxis") < workloads.index("agnosticd.core_workloads.ocp4_workload_gitops_bootstrap") < workloads.index("agnosticd.showroom.ocp4_workload_showroom"), "invalid workload order")
-
-sandboxes = catalog["__meta__"].get("sandboxes", [])
-maas = [item for item in sandboxes if item.get("kind") == "MaaSSandbox"]
-require(len(maas) == 1, "exactly one RHDP MaaSSandbox is required")
-require(maas[0]["cloud_selector"]["purpose"] == "production", "MaaSSandbox must use the production selector")
-require(maas[0]["models"] == "granite-3-2-8b-instruct", "unexpected MaaS model")
-require(not any("litellm_virtual_keys" in item for item in workloads), "MaaSSandbox must own key lifecycle")
+virtual_key_workload = "rhpds.litellm_virtual_keys.ocp4_workload_litellm_virtual_keys"
+require("#include /includes/secrets/litemaas-master_api.yaml" in catalog_text, "LiteMaaS master API include is required")
+require("https://github.com/rhpds/rhpds.litellm_virtual_keys.git" in catalog_text, "LiteMaaS virtual-key collection is required")
+require(workloads.index("agnosticd.core_workloads.ocp4_workload_authentication") < workloads.index(virtual_key_workload) < workloads.index("praxis_ai_gateway.automation.configure_praxis") < workloads.index("agnosticd.core_workloads.ocp4_workload_gitops_bootstrap") < workloads.index("agnosticd.showroom.ocp4_workload_showroom"), "invalid workload order")
+require(virtual_key_workload in catalog["remove_workloads"], "LiteMaaS virtual key cleanup is required")
+require(catalog["ocp4_workload_litellm_virtual_keys_models"] == ["{{ praxis_model_name }}"], "Praxis and LiteMaaS must select the same model variable")
+require(catalog["praxis_model_base_url"] == "{{ litellm_api_endpoint }}/v1", "Praxis must consume the generated LiteMaaS endpoint")
+require(catalog["praxis_model_api_key"] == "{{ litellm_virtual_key }}", "Praxis must consume the generated virtual key")
+require(not catalog["ocp4_workload_litellm_virtual_keys_enable_user_info_data"], "LiteMaaS credentials must not enter user data")
 
 user_data = catalog.get("ocp4_workload_showroom_user_data", {})
 require(not any("maas" in key.lower() or "litellm" in key.lower() or "key" in key.lower() for key in user_data), "Showroom user data must not receive MaaS credentials")

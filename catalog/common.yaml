@@ -4,6 +4,8 @@
 #include /includes/terms-of-service.yaml
 #include /includes/sandbox-api.yaml
 #include /includes/parameters/purpose.yaml
+#include /includes/secrets/litemaas-master_api.yaml
+#include /includes/parameters/litellm_metadata.yaml
 
 config: openshift-workloads
 cloud_provider: none
@@ -24,12 +26,16 @@ requirements_content:
     - name: https://github.com/rhpds/showroom.git
       type: git
       version: v1.7.2
+    - name: https://github.com/rhpds/rhpds.litellm_virtual_keys.git
+      type: git
+      version: "{{ tag }}"
     - name: https://github.com/jkershawrh/showroom-praxis-ai-gateway.git#/automation/ansible
       type: git
       version: "{{ tag }}"
 
 workloads:
   - agnosticd.core_workloads.ocp4_workload_authentication
+  - rhpds.litellm_virtual_keys.ocp4_workload_litellm_virtual_keys
   - praxis_ai_gateway.automation.configure_praxis
   - agnosticd.core_workloads.ocp4_workload_openshift_gitops
   - agnosticd.core_workloads.ocp4_workload_gitops_bootstrap
@@ -40,6 +46,7 @@ remove_workloads:
   - agnosticd.showroom.ocp4_workload_showroom
   - agnosticd.core_workloads.ocp4_workload_gitops_bootstrap
   - praxis_ai_gateway.automation.configure_praxis
+  - rhpds.litellm_virtual_keys.ocp4_workload_litellm_virtual_keys
 
 common_password: >-
   {{ lookup('password', output_dir ~ '/common_password', length=12, chars=['ascii_letters', 'digits']) }}
@@ -59,12 +66,19 @@ ocp4_workload_authentication_user_username_base: user
 ocp4_workload_authentication_user_password: "{{ common_password }}"
 ocp4_workload_authentication_remove_kubeadmin: true
 
-# MaaS is a replaceable OpenAI-compatible backend. Values go directly from the
-# sandbox credential into the custom workload and never into Showroom user data.
+# LiteMaaS is a replaceable OpenAI-compatible backend. AgnosticV creates a
+# per-order virtual key, then passes it directly to the custom workload. The
+# endpoint and credential never enter Showroom user data or GitOps values.
+praxis_model_name: granite-3-2-8b-instruct
+ocp4_workload_litellm_virtual_keys_duration: "7d"
+ocp4_workload_litellm_virtual_keys_models:
+  - "{{ praxis_model_name }}"
+ocp4_workload_litellm_virtual_keys_enable_user_info_messages: false
+ocp4_workload_litellm_virtual_keys_enable_user_info_data: false
+
 praxis_lab_namespace: "praxis-ai-gateway-{{ guid }}"
-praxis_model_base_url: "{{ maas_sandbox.credentials[0].api_base_url }}"
-praxis_model_api_key: "{{ maas_sandbox.credentials[0].virtual_key }}"
-praxis_model_name: "{{ maas_sandbox.credentials[0].available_models[0] }}"
+praxis_model_base_url: "{{ litellm_api_endpoint }}/v1"
+praxis_model_api_key: "{{ litellm_virtual_key }}"
 
 # OpenShift GitOps.
 ocp4_workload_openshift_gitops_channel: gitops-1.19
@@ -88,7 +102,7 @@ ocp4_workload_gitops_bootstrap_helm_values:
     url: https://github.com/jkershawrh/showroom-praxis-ai-gateway
     revision: main
   praxis:
-    model: "{{ maas_sandbox.credentials[0].available_models[0] }}"
+    model: "{{ praxis_model_name }}"
     uiImage: quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:e67615e04af243e2f06d7450f2a1b776c4ac07ebd75c1250a7b7f1f36d694e53
 
 # Showroom intentionally receives no MaaS endpoint or credential.
@@ -103,7 +117,7 @@ ocp4_workload_showroom_user_data:
   openshift_api_url: "{{ openshift_api_url }}"
   openshift_console_url: "https://console-openshift-console.{{ openshift_cluster_ingress_domain }}"
   project_name: "{{ praxis_lab_namespace }}"
-  praxis_model: "{{ maas_sandbox.credentials[0].available_models[0] }}"
+  praxis_model: "{{ praxis_model_name }}"
   user: user1
   password: "{{ common_password }}"
 
@@ -116,12 +130,6 @@ __meta__:
     instructions:
       - name: John Kershaw
         email: jkershaw@redhat.com
-  sandboxes:
-    - kind: MaaSSandbox
-      cloud_selector:
-        purpose: production
-      models: granite-3-2-8b-instruct
-      var: maas_sandbox
   catalog:
     namespace: babylon-catalog-{{ stage | default('?') }}
     display_name: "Govern AI Model Access with Praxis"
@@ -151,7 +159,7 @@ __meta__:
           maximum: 1
   components:
     - name: openshift
-      display_name: OpenShift Cluster on the Intel-backed ocpv09 CNV pool
+      display_name: OpenShift Cluster (Intel ocpv09 target)
       item: agd-v2/ocp-cluster-cnv-pools
       parameter_values:
         cluster_size: multinode
