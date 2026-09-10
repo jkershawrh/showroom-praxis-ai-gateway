@@ -1,7 +1,7 @@
 site:
   title: Govern AI Model Access with Praxis
   url: https://github.com/jkershawrh/showroom-praxis-ai-gateway
-  start_page: praxis-ai-gateway-lab::index.adoc
+  start_page: modules::index.adoc
 content:
   sources:
     - url: .

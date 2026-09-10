@@ -1,6 +1,6 @@
-name: praxis-ai-gateway-lab
+name: modules
 title: Govern AI Model Access with Praxis
-version: main
+version: ~
 nav: [modules/ROOT/nav.adoc]
 asciidoc:
   attributes:

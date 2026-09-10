@@ -1,6 +1,6 @@
 site:
   title: Govern AI Model Access with Praxis
-  start_page: praxis-ai-gateway-lab::index.adoc
+  start_page: modules::index.adoc
 content:
   sources:
     - url: .

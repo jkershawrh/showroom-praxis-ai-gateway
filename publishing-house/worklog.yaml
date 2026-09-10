@@ -2,6 +2,12 @@ entries:
   - date: "2026-09-10"
     stage: integration
     summary: >-
+      Aligned the Antora component name and unversioned output with the working
+      Build an AI Agent Showroom and Nookbag's default unversioned modules path,
+      fixing the content-server 404. The repository was already public.
+  - date: "2026-09-10"
+    stage: integration
+    summary: >-
       Injected the rendered Showroom UI configuration from AgnosticV and aligned
       its terminal route with the deployed OpenShift terminal, preventing the
       Nookbag "Port and url not defined" startup error.
