@@ -13,4 +13,4 @@ __meta__:
       cloud_selector:
         purpose: dev
         cloud: cnv-dedicated-shared
-        lab: ai-qs-intel-inference
+        lab: ai-lab-xeon6-inference

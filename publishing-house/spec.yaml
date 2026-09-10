@@ -119,7 +119,7 @@ approval_checklist:
     cost_per_run_est: ""
     provisioning_time_est: ""
     agnosticv_base_ci: >-
-      Existing ai-qs-intel-inference shared cluster selected through
-      cloud: cnv-dedicated-shared and lab: ai-qs-intel-inference
+      Existing ai-lab-xeon6-inference shared cluster selected through
+      cloud: cnv-dedicated-shared and lab: ai-lab-xeon6-inference
     approved_by: ""
     rejections: []

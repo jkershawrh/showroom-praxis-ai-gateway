@@ -6,7 +6,7 @@ resolved before the catalog item is published:
 1. Move or recreate this monorepo in the Publishing House-approved RHDP GitHub
    organization so AgnosticD, Argo CD, and Showroom can clone it.
 2. Run `qa-automation/healthcheck.yml` and `qa-automation/e2e.yml` on an
-   allocation selected from the registered `ai-qs-intel-inference` shared
+   allocation selected from the registered `ai-lab-xeon6-inference` shared
    cluster.
 
 This integration CI selects the shared cluster by logical Sandbox API labels; it

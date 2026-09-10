@@ -2,6 +2,11 @@ entries:
   - date: "2026-09-10"
     stage: integration
     summary: >-
+      Corrected the Dev Sandbox API selector to the live registered pool label
+      ai-lab-xeon6-inference after the first order exposed the stale draft label.
+  - date: "2026-09-10"
+    stage: integration
+    summary: >-
       Converted Praxis from a per-order cluster component to a tenant CI on the
       registered ai-qs-intel-inference shared cluster. Dev selection uses the
       same cnv-dedicated-shared lab label as the Intel Inference tenant CI.
