@@ -34,15 +34,15 @@ spec:
       status: complete
   environment:
     platform: "ocp"
-    topology: "cnv-pool"
+    topology: "shared-tenant"
     cloud_provider: "cnv"
     max_concurrent_users: null
     ocp_version: "4.20"
-    cluster_type: "multinode"
-    control_plane_instance_count: 3
-    control_plane_cpu: 16
-    control_plane_ram_gb: 64
-    worker_count: 0
+    cluster_type: "existing-shared"
+    control_plane_instance_count: null
+    control_plane_cpu: null
+    control_plane_ram_gb: null
+    worker_count: null
     worker_cpu: null
     worker_ram_gb: null
     worker_disk_gb: null
@@ -118,6 +118,8 @@ approval_checklist:
     peak_environments: null
     cost_per_run_est: ""
     provisioning_time_est: ""
-    agnosticv_base_ci: "agd-v2/ocp-cluster-cnv-pools (integration, unpinned)"
+    agnosticv_base_ci: >-
+      Existing ai-qs-intel-inference shared cluster selected through
+      cloud: cnv-dedicated-shared and lab: ai-qs-intel-inference
     approved_by: ""
     rejections: []

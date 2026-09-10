@@ -53,15 +53,17 @@ catalog_text = (ROOT / "catalog/common.yaml").read_text()
 catalog = yaml.safe_load(catalog_text)
 require(catalog["__meta__"]["catalog"]["category"] in {"Workshops", "Demos", "Labs", "Sandboxes", "Brand_Events"}, "invalid category")
 require(catalog["__meta__"]["catalog"]["reportingLabels"]["primaryBU"] == "Hybrid_Platforms", "invalid business unit")
-component = catalog["__meta__"]["components"][0]
-require(component["item"] == "agd-v2/ocp-cluster-cnv-pools", "integration must use the generic CNV cluster component")
-require("pool" not in component.get("parameter_values", {}), "integration CI must not pin a physical pool")
+require("components" not in catalog["__meta__"], "tenant integration CI must not provision a cluster component")
+require(catalog["__meta__"]["sandbox_api"]["actions"]["destroy"]["catch_all"] is False, "destroy must run tenant cleanup workloads")
+dev = yaml.safe_load((ROOT / "catalog/dev.yaml").read_text())
+selector = dev["__meta__"]["sandboxes"][0]["cloud_selector"]
+require(selector == {"purpose": "dev", "cloud": "cnv-dedicated-shared", "lab": "ai-qs-intel-inference"}, "dev CI must select the registered Intel Inference integration cluster")
 workloads = catalog["workloads"]
 require(all(isinstance(item, str) and item.count(".") == 2 for item in workloads), "workloads must use fully qualified collection names")
 virtual_key_workload = "rhpds.litellm_virtual_keys.ocp4_workload_litellm_virtual_keys"
 require("#include /includes/secrets/litemaas-master_api.yaml" in catalog_text, "LiteMaaS master API include is required")
 require("https://github.com/rhpds/rhpds.litellm_virtual_keys.git" in catalog_text, "LiteMaaS virtual-key collection is required")
-require(workloads.index("agnosticd.core_workloads.ocp4_workload_authentication") < workloads.index(virtual_key_workload) < workloads.index("praxis_ai_gateway.automation.configure_praxis") < workloads.index("agnosticd.core_workloads.ocp4_workload_gitops_bootstrap") < workloads.index("agnosticd.showroom.ocp4_workload_showroom"), "invalid workload order")
+require(workloads.index("agnosticd.namespaced_workloads.ocp4_workload_tenant_keycloak_user") < workloads.index("agnosticd.namespaced_workloads.ocp4_workload_tenant_namespace") < workloads.index(virtual_key_workload) < workloads.index("praxis_ai_gateway.automation.configure_praxis") < workloads.index("agnosticd.core_workloads.ocp4_workload_gitops_bootstrap") < workloads.index("agnosticd.showroom.ocp4_workload_showroom"), "invalid tenant workload order")
 require(virtual_key_workload in catalog["remove_workloads"], "LiteMaaS virtual key cleanup is required")
 require(catalog["ocp4_workload_litellm_virtual_keys_models"] == ["{{ praxis_model_name }}"], "Praxis and LiteMaaS must select the same model variable")
 require(catalog["praxis_model_base_url"] == "{{ litellm_api_endpoint }}/v1", "Praxis must consume the generated LiteMaaS endpoint")
@@ -78,10 +80,13 @@ runtime_values = yaml.safe_load((ROOT / "automation/gitops/praxis/values.yaml").
 bootstrap_values = yaml.safe_load((ROOT / "automation/gitops/bootstrap-infra/values.yaml").read_text())
 images = list(runtime_values["images"].values()) + [bootstrap_values["praxis"]["uiImage"]]
 require(all("@sha256:" in image for image in images), "all runtime images must be digest pinned")
+bootstrap_template = (ROOT / "automation/gitops/bootstrap-infra/templates/application.yaml").read_text()
+require('namespace: {{ .Values.namespace | quote }}' in bootstrap_template, "GitOps destination must use the tenant namespace value")
+require(catalog["ocp4_workload_gitops_bootstrap_helm_values"]["namespace"] == "{{ praxis_lab_namespace }}", "catalog must pass the tenant namespace to GitOps")
 
 spec = yaml.safe_load((ROOT / "publishing-house/spec.yaml").read_text())
 require(spec["project"]["deployment_mode"] == "rhdp_published", "invalid Publishing House deployment mode")
-require(spec["spec"]["environment"]["topology"] == "cnv-pool", "Publishing House topology must be cnv-pool")
+require(spec["spec"]["environment"]["topology"] == "shared-tenant", "Publishing House topology must be shared-tenant")
 require(spec["spec"]["environment"]["gpu_nodes"] == 0, "the Praxis lab must not allocate a local GPU")
 require(spec["spec"]["environment"]["ai_requirement"] == "maas", "MaaS must remain the replaceable model access mechanism")
 

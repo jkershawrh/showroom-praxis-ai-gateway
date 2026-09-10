@@ -2,6 +2,12 @@ entries:
   - date: "2026-09-10"
     stage: integration
     summary: >-
+      Converted Praxis from a per-order cluster component to a tenant CI on the
+      registered ai-qs-intel-inference shared cluster. Dev selection uses the
+      same cnv-dedicated-shared lab label as the Intel Inference tenant CI.
+  - date: "2026-09-10"
+    stage: integration
+    summary: >-
       Aligned the common and dev CI shape with the AI Agent base CI and removed
       physical CNV pool pinning. Integration now uses the reusable generic
       agd-v2/ocp-cluster-cnv-pools component.

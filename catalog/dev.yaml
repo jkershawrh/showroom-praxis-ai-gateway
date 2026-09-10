@@ -1,6 +1,5 @@
 ---
 purpose: development
-num_users: 1
 ocp4_workload_showroom_antora_enable_dev_mode: "true"
 
 __meta__:
@@ -9,8 +8,9 @@ __meta__:
       - rhpds-devs
   catalog:
     display_name: "Govern AI Model Access with Praxis (Dev)"
-  components:
-    - name: openshift
-      parameter_values:
-        cluster_size: multinode
-        host_ocp4_installer_version: "4.20"
+  sandboxes:
+    - kind: OcpSandbox
+      cloud_selector:
+        purpose: dev
+        cloud: cnv-dedicated-shared
+        lab: ai-qs-intel-inference

@@ -1,4 +1,5 @@
 guid: change-me
+namespace: user-change-me-praxis
 repo:
   url: https://github.com/jkershawrh/showroom-praxis-ai-gateway
   revision: main

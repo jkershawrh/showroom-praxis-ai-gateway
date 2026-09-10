@@ -7,7 +7,7 @@ spec:
   project: default
   destination:
     server: https://kubernetes.default.svc
-    namespace: praxis-ai-gateway-{{ .Values.guid }}
+    namespace: {{ .Values.namespace | quote }}
   source:
     repoURL: {{ .Values.repo.url | quote }}
     targetRevision: {{ .Values.repo.revision | quote }}
@@ -15,7 +15,7 @@ spec:
     helm:
       parameters:
         - name: namespace
-          value: praxis-ai-gateway-{{ .Values.guid }}
+          value: {{ .Values.namespace | quote }}
         - name: model
           value: {{ .Values.praxis.model | quote }}
         - name: images.ui

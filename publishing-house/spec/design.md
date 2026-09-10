@@ -7,11 +7,11 @@ artifacts in this repository.
 
 ## Runtime boundary
 
-The Praxis gateway and learner UI run on Red Hat OpenShift provisioned from an
-RHDP integration CNV pool selected by the reusable cluster component. RHDP MaaS
-is consumed only through its OpenAI-compatible API. This integration CI makes
-no claim about the hardware behind either the OpenShift allocation or remote
-MaaS endpoint.
+The Praxis gateway and learner UI run as a tenant on the registered Intel
+Inference integration cluster selected by `cloud: cnv-dedicated-shared` and
+`lab: ai-qs-intel-inference`. The CI does not provision or physically pin a
+cluster. RHDP MaaS is consumed only through its OpenAI-compatible API, and the
+lab makes no claim about the hardware behind that remote endpoint.
 
 ## Secret flow
 

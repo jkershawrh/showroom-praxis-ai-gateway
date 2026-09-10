@@ -1,11 +1,11 @@
 approach: both
 
 infrastructure:
-  type: ocp-cnv
+  type: ocp-shared-tenant
   ocp_version: "4.20"
   multi_user: false
   users_per_deployment: 1
-  pool: unpinned
+  pool: ai-qs-intel-inference
 
 operators:
   - Red Hat OpenShift GitOps
