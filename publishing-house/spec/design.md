@@ -25,7 +25,5 @@ runtime, but makes no claim about the hardware behind the remote MaaS endpoint.
 
 ## Image publication
 
-Images must be AMD64-compatible and pinned by digest. The learner UI image value
-is configurable so Publishing House can replace the development GHCR reference
-with `quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:<published-digest>`
-without changing the chart. Push permission remains a publication prerequisite.
+Images are AMD64-compatible and pinned by digest. The learner UI is published as
+`quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:f09059d9f881ce50b53934cadc0445a3115166904901dd1193b2b4e04aaa36f5`.

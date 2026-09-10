@@ -2,7 +2,5 @@ namespace: praxis-ai-gateway
 model: granite-3-2-8b-instruct
 images:
   praxis: ghcr.io/praxis-proxy/ai@sha256:ef1f8e216f3428e15bc5953f5938562658edc9232ebfce5f946f05cddd34a0e6
-  # Development fallback. Publication target:
-  # quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:<published-digest>
-  ui: ghcr.io/jkershawrh/praxis-ai-gateway-ui@sha256:4d199e1a35cf6fbb1d77492cc9f40a82528de7ac581011e326a08c713ec803f2
+  ui: quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:f09059d9f881ce50b53934cadc0445a3115166904901dd1193b2b4e04aaa36f5
   oauthProxy: quay.io/openshift/origin-oauth-proxy@sha256:fb3c6f4b12b9c340c438d94ef0c347891e0bb3994763e5c6ae38011c016f4878
