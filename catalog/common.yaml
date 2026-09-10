@@ -52,6 +52,6 @@ workloads:
   - name: ocp4_workload_showroom
     role: ocp4_workload_showroom
     vars:
-      ocp4_workload_showroom_content_git_repo: "https://github.com/rhpds/showroom-praxis-ai-gateway.git"
+      ocp4_workload_showroom_content_git_repo: "https://github.com/jkershawrh/showroom-praxis-ai-gateway.git"
       ocp4_workload_showroom_content_git_repo_ref: main
       ocp4_workload_showroom_template: showroom_template_nookbag
