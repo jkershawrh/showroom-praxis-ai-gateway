@@ -26,4 +26,4 @@ runtime, but makes no claim about the hardware behind the remote MaaS endpoint.
 ## Image publication
 
 Images are AMD64-compatible and pinned by digest. The learner UI is published as
-`quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:f09059d9f881ce50b53934cadc0445a3115166904901dd1193b2b4e04aaa36f5`.
+`quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:e67615e04af243e2f06d7450f2a1b776c4ac07ebd75c1250a7b7f1f36d694e53`.
