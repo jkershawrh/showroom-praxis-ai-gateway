@@ -1,0 +1,76 @@
+= Track 2: Observe routing for the exact request
+
+Networking demonstrations are difficult when learners see only a request and a response. As the platform operator, you need evidence that connects a visible topology, the selected logical model, and the exact request a learner just sent.
+
+== What you will learn
+
+* Generate and recognize a W3C trace context
+* Relate learner-visible evidence to the gateway topology
+* Avoid substituting an unrelated latest trace
+
+== See: Evidence belongs to a request
+
+image::architecture.svg[Observable request path from the learner UI through Praxis,link=self,window=_blank]
+
+The learner UI creates a new W3C `traceparent` for every submission. It sends that value through Praxis and displays the trace identifier beside HTTP status, elapsed time, and returned model.
+
+This is intentionally different from asking an observability system for its most recent trace. Under concurrent use, the newest trace might belong to another learner or another request. Evidence must be queried using the identifier created for the request being explained.
+
+Track 1 provides honest local evidence even before a telemetry backend is connected. A later production implementation can use the same identifier with OpenTelemetry and OpenShift observability without changing the client contract.
+
+The UI never receives the upstream credential. It is a teaching surface for topology and sanitized request results, not an administrative console.
+
+== Do: Correlate a request
+
+=== Step 1: Inspect trace generation
+
+Read the small helper that creates the trace context and sends the request.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+sed -n '1,75p' src/ui.py
+----
+
+Find the 32-character trace identifier, 16-character span identifier, and sampled flag in `new_traceparent`.
+
+=== Step 2: Run the UI tests
+
+The unit suite proves identifiers are unique and that the UI sends no authorization header.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+python3 -m pytest tests/unit/test_ui.py -q
+----
+
+All UI tests should pass before you trust the visual evidence.
+
+=== Step 3: Start the learner UI
+
+Install the optional UI dependencies and start Gradio against your existing port-forward.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+python3 -m pip install -e '.[ui]'
+PRAXIS_BASE_URL=http://127.0.0.1:8080 python3 src/ui.py
+----
+
+Open the App UI tab and submit the provided example prompt. Record the returned trace ID and status.
+
+=== Verify
+
+Confirm that the topology names a configured backend rather than MaaS as a required component.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+rg -n 'Configured model backend|trace_id' src/ui.py
+----
+
+Both concepts should be present in the UI source.
+
+== Key takeaway
+
+Useful observability explains one known request. By carrying an exact trace identifier and preserving the backend-neutral topology, the UI makes gateway behavior understandable without inventing evidence.

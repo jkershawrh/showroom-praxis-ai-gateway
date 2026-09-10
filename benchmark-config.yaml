@@ -1,0 +1,10 @@
+version: 1
+claims:
+  - id: completion-time
+    target: 90
+    unit: minutes
+    status: unverified
+  - id: cluster-capacity
+    target: small
+    unit: rhdp-cluster-tier
+    status: unverified

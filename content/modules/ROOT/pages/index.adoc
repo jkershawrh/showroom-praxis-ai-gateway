@@ -1,0 +1,37 @@
+= Govern AI Model Access with Praxis
+
+Application teams lose time and control when every service owns a different model endpoint, credential, and routing rule. In this lab, you act as an enterprise AI platform engineer and build one governed model-access boundary on Red Hat OpenShift.
+
+The lab has three progressive tracks. Track 1 establishes access, Track 2 makes routing and failure behavior observable, and Track 3 examines controls needed by industry-sensitive workloads. Red Hat Demo Platform Model-as-a-Service (MaaS) supplies an LLM for exercises; it is a replaceable lab dependency, not the architecture being recommended.
+
+== What you will learn
+
+* Separate client and platform responsibilities for model access
+* Deploy Praxis AI Gateway with OpenShift security controls
+* Keep upstream model credentials away from application code
+* Invoke one gateway contract from Java, Python, and TypeScript
+* Correlate a request with exact routing evidence
+* Evaluate failure, isolation, retention, and audit trade-offs
+* Explain how OpenShift AI can replace the shared lab backend
+
+== Prerequisites
+
+* A provisioned RHPDS OpenShift environment
+* The browser and embedded terminal supplied by Showroom
+* Familiarity with HTTP APIs; prior OpenShift experience is helpful but not required
+
+== Time estimate
+
+Allow approximately 90 minutes for all three tracks. Track 1 can be completed independently in approximately 30–45 minutes.
+
+== Architecture
+
+image::architecture.svg[Praxis AI Gateway architecture with polyglot clients and replaceable model backends,link=self,window=_blank]
+
+The stable path is `application → Praxis → configured model backend`. Clients know only Praxis. Operators configure the backend URL, logical model, credentials, and routing policy on the gateway side.
+
+The dotted OpenShift AI path is the enterprise-aligned substitution point. Changing the backend must never require Java, Python, or TypeScript source changes.
+
+IMPORTANT: Do not enter confidential, personal, regulated, or proprietary information into the shared demonstration model.
+
+This lab is powered by Red Hat OpenShift running on {intel_platform} processors.

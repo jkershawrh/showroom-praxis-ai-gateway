@@ -1,0 +1,15 @@
+site:
+  title: Govern AI Model Access with Praxis
+  start_page: praxis-ai-gateway-lab::index.adoc
+content:
+  sources:
+    - url: .
+      branches: HEAD
+      start_path: content
+ui:
+  bundle:
+    url: https://github.com/rhpds/showroom_theme_rhdp/releases/latest/download/ui-bundle.zip
+    snapshot: true
+  supplemental_files: content/supplemental-ui
+output:
+  dir: ./www

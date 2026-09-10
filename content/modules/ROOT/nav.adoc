@@ -1,0 +1,12 @@
+* xref:index.adoc[Welcome]
+* xref:01-accessing-cluster.adoc[Access the environment]
+* Track 1: Establish governed access
+** xref:02-deploy-gateway.adoc[Deploy the gateway]
+** xref:03-prove-portability.adoc[Prove portability]
+* Track 2: Operate the platform
+** xref:04-observe-routing.adoc[Observe routing]
+** xref:05-handle-failure.adoc[Handle failure]
+* Track 3: Apply governance
+** xref:06-isolate-data.adoc[Isolate tenants and data]
+** xref:07-assess-evidence.adoc[Assess industry evidence]
+* xref:08-conclusion.adoc[Conclusion]

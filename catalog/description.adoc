@@ -1,0 +1,31 @@
+= Govern AI Model Access with Praxis
+
+Stop duplicating model credentials, endpoints, and routing decisions across application teams. Build a governed AI access layer, observe how requests move through it, and apply controls for industry-sensitive workloads.
+
+== What you will learn
+
+* Separate application and platform responsibilities for model access
+* Deploy Praxis AI Gateway on Red Hat OpenShift
+* Prove gateway-owned credential injection and backend portability
+* Correlate a learner request with routing evidence
+* Evaluate isolation, retention, and failure-policy trade-offs
+
+== Prerequisites
+
+* A web browser
+* No prior OpenShift experience required
+
+== Time estimate
+
+This lab takes approximately 90 minutes to complete.
+
+== Technology
+
+* Red Hat OpenShift
+* Red Hat OpenShift AI integration path
+* Praxis AI Gateway upstream project
+* Powered by Intel Xeon processors
+
+== Support
+
+If you encounter issues, contact the lab facilitator or visit https://red.ht/rhdp-ticket[Red Hat Demo Platform support].

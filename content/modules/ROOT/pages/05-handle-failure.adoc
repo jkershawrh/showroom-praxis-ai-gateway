@@ -1,0 +1,88 @@
+= Track 2: Define failure and recovery behavior
+
+Centralizing model access also centralizes failure. Platform owners must decide how clients experience timeouts, unavailable backends, and configuration errors instead of allowing every application to improvise a different retry policy.
+
+== What you will learn
+
+* Distinguish gateway readiness from backend success
+* Observe a controlled unavailable-backend response
+* Recover by restoring declarative configuration
+
+== See: Failures cross ownership boundaries
+
+image::architecture.svg[Gateway failure boundary between applications and the selected model backend,link=self,window=_blank]
+
+OpenShift readiness answers whether the Praxis listener can serve traffic. It does not guarantee that a remote model is healthy for every request. Conflating those conditions can restart a healthy gateway during an upstream incident.
+
+The UI catches connection-level errors and returns an explicit `gateway_connection_error` with the request trace identifier. HTTP failures remain visible as statuses and sanitized bodies. Neither path should expose the upstream credential.
+
+The base manifest is declarative. If a learner changes backend configuration, reapplying Kustomize restores the reviewed state. In a production platform, OpenShift GitOps would continuously reconcile the same intent and record drift.
+
+Retry behavior is deliberately not hidden in this exercise. Retrying generative requests can increase cost or duplicate side effects, so it requires an application-specific decision.
+
+== Do: Exercise a controlled failure
+
+=== Step 1: Preserve the current configuration
+
+Export the current ConfigMap before introducing a temporary fault.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc -n {project_name} get configmap praxis-ai-config -o yaml >/tmp/praxis-config-before.yaml
+----
+
+This file is evidence only; recovery will use source-controlled manifests.
+
+=== Step 2: Stop the mock backend
+
+Scale the mock to zero so Praxis remains available while its selected backend does not.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc -n {project_name} scale deployment/mock-backend --replicas=0
+oc -n {project_name} rollout status deployment/mock-backend --timeout=30s || true
+----
+
+The gateway deployment should remain available even though inference cannot complete.
+
+=== Step 3: Send a request
+
+Invoke the same stable client contract and retain the non-success evidence.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+python3 clients/python/client.py || true
+----
+
+Observe that the failure occurs at the backend hop rather than requiring a different client endpoint.
+
+=== Step 4: Reconcile the reviewed state
+
+Reapply the base and wait for recovery.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+oc -n {project_name} apply -k deploy/kustomize/base
+oc -n {project_name} rollout status deployment/mock-backend --timeout=180s
+----
+
+Kustomize restores the declared replica count.
+
+=== Verify
+
+Send the request again and rerun validation.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+python3 clients/python/client.py
+PROJECT_NAME={project_name} python3 runtime-automation/track1/validate.py
+----
+
+The client response and validator should both return to green.
+
+== Key takeaway
+
+Gateway health, backend health, and request success are related but distinct signals. Explicit failure evidence and declarative recovery give platform teams predictable behavior without coupling clients to providers.

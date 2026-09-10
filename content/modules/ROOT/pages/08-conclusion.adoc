@@ -1,0 +1,43 @@
+= Conclusion
+
+You built and assessed a governed AI model-access boundary rather than another provider-specific client integration.
+
+== What you accomplished
+
+* Deployed Praxis AI Gateway on an AMD64 OpenShift worker
+* Kept the model credential in an OpenShift Secret
+* Proved that clients depend only on the Praxis endpoint
+* Connected learner-visible topology to exact-request evidence
+* Exercised explicit failure behavior and recovery
+* Evaluated tenant, data, retention, and industry-policy decisions
+* Preserved MaaS as a replaceable lab model source
+
+== Clean up
+
+Delete only your assigned project. This removes the gateway, mock backend, policies, and lab credentials together.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc delete project {project_name}
+----
+
+Confirm that the project is terminating or absent.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc get project {project_name} 2>&1 || true
+----
+
+== Next steps
+
+* Review the https://github.com/jkershawrh/praxis-lab[Praxis quickstart source and evidence].
+* Explore the https://github.com/praxis-proxy/ai[Praxis upstream project].
+* Plan the replaceable enterprise backend with https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/[Red Hat OpenShift AI documentation].
+* Add a tested OAuth or OpenID Connect boundary before exposing a real model through a public route.
+* Validate Track 2 and Track 3 policies against your organization's threat model and retention requirements.
+
+== Final perspective
+
+An AI gateway is useful because it concentrates change: clients retain a stable contract while platform teams evolve model providers, routing, evidence, and controls. The lab proves that separation without claiming that one configuration establishes production security or regulatory compliance.
+
+Powered by Red Hat OpenShift running on {intel_platform} processors.

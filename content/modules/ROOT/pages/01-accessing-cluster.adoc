@@ -1,0 +1,52 @@
+= Access the lab environment
+
+Showroom provides a terminal already authenticated to your assigned OpenShift project. Begin by confirming identity, architecture, and capacity so later failures are not confused with access problems.
+
+== Confirm your identity
+
+This command displays the OpenShift user represented by the current terminal session.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc whoami
+----
+
+The result should be `{user}` or the user identity assigned by the environment.
+
+== Confirm the target project
+
+Create or select the namespace used throughout the lab. Namespace isolation prevents learners from changing each other's resources.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc new-project {project_name} 2>/dev/null || oc project {project_name}
+----
+
+Verify that the CLI now reports the expected project.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc project
+----
+
+== Confirm Intel-compatible worker architecture
+
+Praxis v0.3.0 currently publishes an AMD64 image. Inspect schedulable worker architectures before deploying it.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc get nodes -l node-role.kubernetes.io/worker -o custom-columns=NAME:.metadata.name,ARCH:.status.nodeInfo.architecture
+----
+
+At least one worker should report `amd64`. The lab requires no accelerator because model inference is supplied remotely.
+
+== Obtain the source
+
+Clone the tested source so every later command uses the same configuration and validation contracts.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+git clone {quickstart_repo} ~/praxis-lab && cd ~/praxis-lab
+----
+
+You are ready when `README.md`, `deploy/`, `runtime-automation/`, and `tests/` are present.

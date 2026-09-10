@@ -1,0 +1,57 @@
+---
+__meta__:
+  catalog:
+    display_name: "Govern AI Model Access with Praxis"
+    description: >-
+      Centralize AI model credentials, endpoints, and routing policy for application teams.
+    category: Workshops
+    multiuser: true
+    labels: [partner-intel, ai, quickstart]
+    keywords: [ai-gateway, governance, routing, openshift, intel, ai]
+    icon: intelligent-automation
+    reportingLabels:
+      primaryBU: AI
+      product: Red Hat OpenShift AI
+  components:
+    - name: cluster
+      item: agd-v2/ocp-cluster-cnv-pools
+      parameter_values:
+        cluster_size: small
+        ocp_version: "4.21"
+        num_users: 30
+        worker_instance_count_formula: "ceil(num_users / 10) + 1"
+      propagate_provision_data:
+        - openshift_api_url
+        - openshift_cluster_admin_token
+        - openshift_cluster_ingress_domain
+        - openshift_console_url
+  deployer:
+    execution_environment: quay.io/agnosticd/ee-multicloud:chained-latest
+    type: agnosticd
+  asset_uuid: "f8eae1e2-4919-4b2a-9bba-03c28325e2bf"
+
+config: openshift-workloads
+cloud_provider: none
+
+workloads:
+  - name: ocp4_workload_authentication
+    role: ocp4_workload_authentication
+    vars:
+      ocp4_workload_authentication_idm_type: htpasswd
+      ocp4_workload_authentication_htpasswd_user_count: "{{ num_users }}"
+      ocp4_workload_authentication_htpasswd_user_password: "{{ common_password }}"
+      ocp4_workload_authentication_remove_kubeadmin: true
+  - name: ocp4_workload_litellm_virtual_keys
+    role: ocp4_workload_litellm_virtual_keys
+    vars:
+      ocp4_workload_litellm_virtual_keys_litellm_base_url: "https://litellm-prod.apps.maas.redhatworkshops.io"
+      ocp4_workload_litellm_virtual_keys_model_list: [granite-2b-cpu]
+      ocp4_workload_litellm_virtual_keys_num_users: "{{ num_users }}"
+      ocp4_workload_litellm_virtual_keys_budget_per_key: 5.0
+      ocp4_workload_litellm_virtual_keys_max_budget: 150.0
+  - name: ocp4_workload_showroom
+    role: ocp4_workload_showroom
+    vars:
+      ocp4_workload_showroom_content_git_repo: "https://github.com/rh-ai-quickstart/showroom-praxis-ai-gateway.git"
+      ocp4_workload_showroom_content_git_repo_ref: main
+      ocp4_workload_showroom_template: showroom_template_nookbag

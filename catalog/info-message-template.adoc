@@ -1,0 +1,23 @@
+= Govern AI Model Access with Praxis
+
+Your lab environment is ready.
+
+== Access
+
+[cols="1,3"]
+|===
+| OpenShift Console | {{ openshift_console_url }}
+| Terminal | Open the Showroom Terminal tab
+| Username | {{ user }}
+| Password | {{ password }}
+|===
+
+== Quick start
+
+. Open the Showroom tab to access the lab guide.
+. Follow the modules in order; each builds on validated prior state.
+. Use the terminal panel to execute commands directly on the cluster.
+
+== Powered by
+
+Red Hat OpenShift running on Intel Xeon processors.

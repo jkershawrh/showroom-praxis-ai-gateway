@@ -1,0 +1,74 @@
+= Track 1: Deploy the governed gateway
+
+You are the platform engineer for teams that currently copy model credentials into each application. Your first objective is to establish a gateway-owned boundary and prove that OpenShift, not individual client repositories, owns deployment controls.
+
+== What you will learn
+
+* Recognize the client, gateway, and backend trust boundaries
+* Observe an intentional red validation state
+* Deploy Praxis and a deterministic backend with restricted settings
+
+== See: The controlled request path
+
+image::architecture.svg[Track 1 request path through Praxis to a configured backend,link=self,window=_blank]
+
+The application sends an OpenAI-compatible request to Praxis. It does not receive the backend URL or backend credential. Praxis selects the configured backend and injects the upstream authorization value as the request crosses the gateway boundary.
+
+The first deployment uses a UBI-based mock model API. This isolates gateway behavior from shared-model availability and quota, making the red/green result deterministic. The mock credential has no value outside this namespace.
+
+OpenShift supplies a Secret, restrictive container security contexts, an edge TLS route, and NetworkPolicies. Praxis is upstream software running on OpenShift; the lab does not represent it as a supported Red Hat product.
+
+The public route is acceptable only for the non-sensitive mock exercise. When the backend changes to MaaS, the overlay removes that route and uses namespace-authorized port forwarding until a downstream identity boundary is designed.
+
+== Do: Establish the boundary
+
+=== Step 1: Observe red
+
+Run validation before installing anything. A failing result proves the validator can distinguish an absent solution from a working one.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+PROJECT_NAME={project_name} python3 runtime-automation/track1/validate.py || true
+----
+
+The JSON should contain `"state": "red"` and list missing resources.
+
+=== Step 2: Deploy the minimum solution
+
+The solver creates a generated lab-only credential, applies the Kustomize base, and waits for the mock backend and gateway.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+PROJECT_NAME={project_name} ./runtime-automation/track1/solve.sh
+----
+
+Both deployment rollouts must finish successfully.
+
+=== Step 3: Inspect the controls
+
+Review workloads, the Secret reference, and the policies without printing the Secret value.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc -n {project_name} get deploy,service,route,networkpolicy
+oc -n {project_name} get deploy praxis-ai -o jsonpath='{.spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name}{"\n"}'
+----
+
+The reference should be `model-backend-credentials`; the value itself stays hidden.
+
+=== Verify
+
+Run the same validator after installation.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+PROJECT_NAME={project_name} python3 runtime-automation/track1/validate.py
+----
+
+Every check should pass and the top-level state should be `green`.
+
+== Key takeaway
+
+The gateway boundary is now an observable platform resource rather than an assumption inside application code. You also proved the validator starts red and becomes green only after the required OpenShift controls exist.

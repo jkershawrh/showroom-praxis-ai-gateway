@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="320" viewBox="0 0 1000 320" role="img" aria-labelledby="title desc">
+  <title id="title">Praxis AI Gateway lab architecture</title>
+  <desc id="desc">Polyglot application clients call Praxis on OpenShift. Praxis selects a configurable model backend supplied by MaaS for the lab or OpenShift AI for an enterprise deployment.</desc>
+  <rect width="1000" height="320" fill="#f5f5f5"/>
+  <g font-family="Arial,sans-serif" text-anchor="middle">
+    <rect x="40" y="70" width="220" height="180" rx="12" fill="#fff" stroke="#4d4d4d" stroke-width="3"/>
+    <text x="150" y="110" font-size="24" font-weight="bold">Applications</text>
+    <text x="150" y="150" font-size="20">Java</text><text x="150" y="185" font-size="20">Python</text><text x="150" y="220" font-size="20">TypeScript</text>
+    <rect x="390" y="100" width="220" height="120" rx="12" fill="#ee0000" stroke="#8f0000" stroke-width="3"/>
+    <text x="500" y="150" font-size="24" font-weight="bold" fill="#fff">Praxis</text><text x="500" y="185" font-size="18" fill="#fff">on OpenShift</text>
+    <rect x="740" y="45" width="220" height="95" rx="12" fill="#fff" stroke="#0068b5" stroke-width="3"/>
+    <text x="850" y="85" font-size="22" font-weight="bold">RHPDS MaaS</text><text x="850" y="115" font-size="16">lab model access</text>
+    <rect x="740" y="180" width="220" height="95" rx="12" fill="#fff" stroke="#ee0000" stroke-width="3"/>
+    <text x="850" y="220" font-size="21" font-weight="bold">OpenShift AI</text><text x="850" y="250" font-size="16">enterprise path</text>
+    <path d="M260 160 H390" stroke="#222" stroke-width="4" marker-end="url(#arrow)"/><path d="M610 150 L740 95" stroke="#222" stroke-width="4" marker-end="url(#arrow)"/><path d="M610 175 L740 225" stroke="#777" stroke-width="3" stroke-dasharray="8" marker-end="url(#arrow)"/>
+  </g>
+  <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#222"/></marker></defs>
+</svg>

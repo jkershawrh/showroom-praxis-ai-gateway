@@ -1,0 +1,87 @@
+= Track 1: Prove client and backend portability
+
+A gateway has little platform value if every language still knows the provider URL or if switching providers requires application releases. You will inspect the shared contract, invoke it, and then map the RHPDS model source into neutral gateway configuration.
+
+== What you will learn
+
+* Identify the single client-facing environment variable
+* Compare Java, Python, and TypeScript implementations
+* Explain why MaaS is replaceable model access rather than the target architecture
+
+== See: One contract, replaceable backends
+
+image::architecture.svg[Polyglot clients using one gateway contract with replaceable backends,link=self,window=_blank]
+
+All three clients call `/v1/chat/completions` beneath `PRAXIS_BASE_URL`. None reads `MODEL_BASE_URL` or `MODEL_API_KEY`. Those variables belong to deployment automation and Praxis configuration.
+
+The RHPDS environment supplies a shared model because deploying a model separately for every learner would waste capacity. This operational constraint does not change the architectural contract. OpenShift AI or another compatible service can replace MaaS through configuration.
+
+The RHPDS overlay also removes the mock route. A namespace user uses `oc port-forward`, so OpenShift authorization determines who may establish local access. Production exposure needs a separately tested OAuth or OpenID Connect boundary.
+
+The clients deliberately remain small. Their purpose is to prove ownership boundaries, not to recommend three application frameworks.
+
+== Do: Exercise the portable contract
+
+=== Step 1: Inspect the client contract
+
+Search all clients for endpoint and credential variables.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+rg -n 'PRAXIS_BASE_URL|MODEL_BASE_URL|MODEL_API_KEY' clients
+----
+
+Only `PRAXIS_BASE_URL` should appear beneath `clients/`.
+
+=== Step 2: Connect to Praxis
+
+Establish local access to the mock deployment without copying its upstream credential.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc -n {project_name} port-forward service/praxis-ai 8080:8080 >/tmp/praxis-port-forward.log 2>&1 &
+export PRAXIS_BASE_URL=http://127.0.0.1:8080
+----
+
+The background port-forward connects only your terminal session to the Service.
+
+=== Step 3: Invoke from Python
+
+Send the shared request contract through Praxis.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+python3 clients/python/client.py
+----
+
+The response should identify `lab-model` and contain an assistant message.
+
+=== Step 4: Render the RHPDS configuration safely
+
+Preview a neutral configuration using placeholders; do not print a real model credential.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+MODEL_BASE_URL={maas_api_url} PRAXIS_MODEL={maas_model} python3 deploy/rhpds/render_config.py >/tmp/praxis-rhpds.yaml
+grep -E 'address:|model:|MODEL_API_KEY' /tmp/praxis-rhpds.yaml
+----
+
+The output describes the endpoint and logical model but refers to `MODEL_API_KEY` instead of containing a key.
+
+=== Verify
+
+Run the contract tests that prevent backend information from entering clients.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab && python3 -m pytest tests/contracts -q
+----
+
+All contract tests should pass.
+
+== Key takeaway
+
+Portability is demonstrated by a stable client input and gateway-side substitution—not by a diagram alone. MaaS satisfies the lab's model-access limitation while the enterprise serving decision remains open.

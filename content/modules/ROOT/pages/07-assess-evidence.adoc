@@ -1,0 +1,91 @@
+= Track 3: Assess industry evidence
+
+Executives and auditors need more than a successful demo, but different industries care about different failure modes. You will use the competency matrix to evaluate evidence without turning a technical lab into an unsupported compliance claim.
+
+== What you will learn
+
+* Map industry concerns to platform control evidence
+* Separate verified, planned, preview, and unsupported capabilities
+* Produce a defensible go/no-go assessment
+
+== See: Evidence before claims
+
+image::architecture.svg[Praxis platform evidence spanning clients gateway and model backend,link=self,window=_blank]
+
+Banking teams may prioritize tenant attribution, approved-model routing, and retention. Healthcare providers may emphasize data minimization and controlled egress. Government environments may prioritize authorization boundaries and reproducible configuration. Manufacturing and telecommunications teams may focus on availability and centralized change control.
+
+These motivations overlap, but their policies are not interchangeable. The lab therefore uses scenario profiles rather than claiming a universal industry configuration. Legal, privacy, security, and records teams must approve the target design.
+
+The capability matrix labels each Praxis feature by evidence maturity. A released and tested function can support a hands-on requirement. An experimental demonstration can inform a discussion but cannot silently become a production promise.
+
+The claim registry applies the same discipline to numbers. Hardware estimates and completion time remain unverified until measured in the target environment. Honest uncertainty is stronger evidence than false precision.
+
+== Do: Build an evidence assessment
+
+=== Step 1: Review capability maturity
+
+Read the matrix and identify which capabilities are core, optional, preview, or deferred.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+sed -n '1,240p' docs/capability-matrix.md
+----
+
+Do not promote an experimental Grid or policy-engine example into the core lab without release evidence.
+
+=== Step 2: Inspect the claim registry
+
+List every quantified claim and its verification state.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+python3 -c 'import yaml; d=yaml.safe_load(open("tests/claim_registry.yaml")); [print(c["id"], c["verified"]) for c in d["claims"]]'
+----
+
+Unverified values must remain labeled as estimates rather than guarantees.
+
+=== Step 3: Choose an industry scenario
+
+Create a short assessment file for one scenario without including prompts, responses, or credentials.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cat > /tmp/praxis-assessment.txt <<'EOF'
+Scenario: industry-sensitive shared AI access
+Required evidence: authenticated caller, approved model, controlled egress, secret rotation, explicit retention
+Verified here: gateway deployment, credential ownership, backend-neutral clients, namespace network policy
+Still required: identity integration, data policy implementation, target-cluster operational testing, governance approval
+Decision: not production-ready until remaining evidence is complete
+EOF
+cat /tmp/praxis-assessment.txt
+----
+
+The decision should distinguish lab evidence from production approval.
+
+=== Step 4: Run publication safeguards
+
+Execute the tests that prevent unsupported product, architecture, and compliance wording.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab && python3 -m pytest tests/publication tests/contracts -q
+----
+
+All safeguards should pass.
+
+=== Verify
+
+Confirm the assessment contains no unconditional compliance assertion.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+if grep -Eqi 'is compliant|guarantees compliance|certified compliant' /tmp/praxis-assessment.txt; then echo RED; else echo GREEN; fi
+----
+
+The result should be green.
+
+== Key takeaway
+
+Industry alignment starts with explicit evidence and ownership, not a compliance badge. The matrix gives reviewers a repeatable way to decide what is proven, what remains experimental, and what must be validated in their environment.
