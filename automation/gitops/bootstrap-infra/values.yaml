@@ -4,4 +4,6 @@ repo:
   revision: main
 praxis:
   model: granite-3-2-8b-instruct
+  # Development image. Publication target:
+  # quay.io/redhat-gpte/praxis-ai-gateway-ui@sha256:<published-digest>
   uiImage: ghcr.io/jkershawrh/praxis-ai-gateway-ui@sha256:4d199e1a35cf6fbb1d77492cc9f40a82528de7ac581011e326a08c713ec803f2
