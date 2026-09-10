@@ -8,6 +8,8 @@ This personal staging location is temporary because the current contributor acco
 
 The model is accessed through shared MaaS only because RHDP labs require practical shared inference. MaaS is not taught as the Praxis architecture or production destination.
 
+The catalog must provision Praxis through an automation workload that consumes `litellm_api_endpoint` and `litellm_virtual_key` directly. Those values must become an OpenShift ConfigMap and Secret without being inserted into Showroom pages or terminal command history.
+
 == Build locally
 
 [source,bash]
