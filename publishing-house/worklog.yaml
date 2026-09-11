@@ -1,4 +1,10 @@
 entries:
+  - date: "2026-09-11"
+    stage: integration
+    summary: >-
+      Added both cloud_selector and tenant_cluster to the Dev tenant sandbox,
+      matching the current Sandbox API contract and the hidden Praxis cluster
+      CI annotations.
   - date: "2026-09-10"
     stage: integration
     summary: >-

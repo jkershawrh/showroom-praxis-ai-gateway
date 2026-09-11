@@ -9,7 +9,7 @@ artifacts in this repository.
 
 The Praxis gateway and learner UI run as a tenant on the registered Intel
 Inference integration cluster selected by `cloud: cnv-dedicated-shared` and
-`lab: ai-lab-xeon6-inference`. The CI does not provision or physically pin a
+`lab: ai-qs-praxis`, paired with `ai-quickstarts/ai-qs-praxis-cluster`. The CI does not physically pin a
 cluster. RHDP MaaS is consumed only through its OpenAI-compatible API, and the
 lab makes no claim about the hardware behind that remote endpoint.
 

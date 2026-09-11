@@ -13,4 +13,6 @@ __meta__:
       cloud_selector:
         purpose: dev
         cloud: cnv-dedicated-shared
-        lab: ai-lab-xeon6-inference
+        lab: ai-qs-praxis
+      tenant_cluster:
+        item: ai-quickstarts/ai-qs-praxis-cluster

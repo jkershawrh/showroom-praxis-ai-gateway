@@ -5,7 +5,7 @@ infrastructure:
   ocp_version: "4.20"
   multi_user: false
   users_per_deployment: 1
-  pool: ai-lab-xeon6-inference
+  pool: ai-qs-praxis
 
 operators:
   - Red Hat OpenShift GitOps

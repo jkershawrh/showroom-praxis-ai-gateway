@@ -64,7 +64,8 @@ require(catalog["__meta__"]["catalog"]["workshop_user_mode"] == "none", "single-
 require(catalog["__meta__"]["sandbox_api"]["actions"]["destroy"]["catch_all"] is False, "destroy must run tenant cleanup workloads")
 dev = yaml.safe_load((ROOT / "catalog/dev.yaml").read_text())
 selector = dev["__meta__"]["sandboxes"][0]["cloud_selector"]
-require(selector == {"purpose": "dev", "cloud": "cnv-dedicated-shared", "lab": "ai-lab-xeon6-inference"}, "dev CI must select the registered Intel Inference integration cluster")
+require(selector == {"purpose": "dev", "cloud": "cnv-dedicated-shared", "lab": "ai-qs-praxis"}, "dev CI must select the paired Praxis integration cluster")
+require(dev["__meta__"]["sandboxes"][0]["tenant_cluster"]["item"] == "ai-quickstarts/ai-qs-praxis-cluster", "dev CI must reference the paired Praxis cluster CI")
 workloads = catalog["workloads"]
 require(all(isinstance(item, str) and item.count(".") == 2 for item in workloads), "workloads must use fully qualified collection names")
 virtual_key_workload = "rhpds.litellm_virtual_keys.ocp4_workload_litellm_virtual_keys"
