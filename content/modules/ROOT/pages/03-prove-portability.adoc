@@ -46,7 +46,7 @@ export PRAXIS_BASE_URL=http://127.0.0.1:8080
 
 The background port-forward connects only your terminal session to the Service.
 
-=== Step 3: Invoke from Python
+=== Step 3: Invoke from three languages
 
 Send the shared request contract through Praxis.
 
@@ -56,7 +56,25 @@ cd ~/praxis-lab
 python3 clients/python/client.py
 ----
 
-The response should identify `{maas_model}` and contain an assistant message.
+Compile and run the dependency-free Java client.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+mkdir -p /tmp/praxis-java
+javac -d /tmp/praxis-java clients/java/src/main/java/com/redhat/praxis/PraxisClient.java
+java -cp /tmp/praxis-java com.redhat.praxis.PraxisClient
+----
+
+Install the pinned TypeScript runner and invoke the same contract.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab/clients/typescript
+npm install
+npm run invoke
+----
+
+Each response should identify `{maas_model}` and contain an assistant message. The language changes; the endpoint, request shape, and credential boundary do not.
 
 === Step 4: Render the RHPDS configuration safely
 
@@ -80,7 +98,7 @@ Run the contract tests that prevent backend information from entering clients.
 cd ~/praxis-lab && python3 -m pytest tests/contracts -q
 ----
 
-All contract tests should pass.
+All contract tests should pass. More importantly, you have now produced live responses through Praxis from all three clients; the test suite is supporting evidence rather than a substitute for the exercise.
 
 == Key takeaway
 

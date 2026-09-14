@@ -48,21 +48,18 @@ Unverified values must remain labeled as estimates rather than guarantees.
 
 === Step 3: Choose an industry scenario
 
-Create a short assessment file for one scenario without including prompts, responses, or credentials.
+Choose a scenario, then create a sanitized evidence bundle that survives the lab session. The collector intentionally excludes Secrets, prompts, responses, and access tokens.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-cat > /tmp/praxis-assessment.txt <<'EOF'
-Scenario: industry-sensitive shared AI access
-Required evidence: authenticated caller, approved model, controlled egress, secret rotation, explicit retention
-Verified here: gateway deployment, credential ownership, backend-neutral clients, namespace network policy
-Still required: identity integration, data policy implementation, target-cluster operational testing, governance approval
-Decision: not production-ready until remaining evidence is complete
-EOF
-cat /tmp/praxis-assessment.txt
+cd ~/praxis-lab
+python3 tools/collect_evidence.py \
+  --project {project_name} \
+  --scenario "healthcare provider shared AI access"
+ls -lh artifacts/praxis-evidence-*.tar.gz
 ----
 
-The decision should distinguish lab evidence from production approval.
+Open the generated `assessment.md` and adapt the scenario, missing controls, and decision to your organization. Keep the archive; it is the learner-created deliverable from this lab.
 
 === Step 4: Run publication safeguards
 
@@ -81,11 +78,12 @@ Confirm the assessment contains no unconditional compliance assertion.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-if grep -Eqi 'is compliant|guarantees compliance|certified compliant' /tmp/praxis-assessment.txt; then echo RED; else echo GREEN; fi
+ASSESSMENT=$(find ~/praxis-lab/artifacts -name assessment.md -print | tail -1)
+if grep -Eqi 'is compliant|guarantees compliance|certified compliant' "$ASSESSMENT"; then echo RED; else echo GREEN; fi
 ----
 
 The result should be green.
 
 == Key takeaway
 
-Industry alignment starts with explicit evidence and ownership, not a compliance badge. The matrix gives reviewers a repeatable way to decide what is proven, what remains experimental, and what must be validated in their environment.
+Industry alignment starts with explicit evidence and ownership, not a compliance badge. You leave with a sanitized bundle and assessment that reviewers can refine, while clearly separating what the lab proved from what still requires production validation.

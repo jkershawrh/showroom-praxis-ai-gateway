@@ -41,7 +41,7 @@ List policy names and the pod selectors they protect.
 [source,bash,role="execute",subs="attributes+"]
 ----
 oc -n {project_name} get networkpolicy
-oc -n {project_name} describe networkpolicy praxis-ai-default-deny
+oc -n {project_name} describe networkpolicy praxis-lab-default-deny
 ----
 
 The default-deny policy should select the Praxis pod; allow rules then add only required traffic.

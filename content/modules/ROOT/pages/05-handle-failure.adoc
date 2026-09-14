@@ -22,25 +22,26 @@ Retry behavior is deliberately not hidden in this exercise. Retrying generative 
 
 == Do: Exercise a controlled failure
 
-=== Step 1: Preserve the current configuration
+=== Step 1: Preserve the current network policy
 
-Export the current ConfigMap before introducing a temporary fault.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-oc -n {project_name} get configmap praxis-ai-config -o yaml >/tmp/praxis-config-before.yaml
-----
-
-This file is evidence only; recovery will use source-controlled manifests.
-
-=== Step 2: Stop the mock backend
-
-Scale the mock to zero so Praxis remains available while its selected backend does not.
+Export the gateway egress policy before introducing a temporary fault.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-oc -n {project_name} scale deployment/mock-backend --replicas=0
-oc -n {project_name} rollout status deployment/mock-backend --timeout=30s || true
+oc -n {project_name} get networkpolicy praxis-ai-allow-required-traffic -o yaml >/tmp/praxis-egress-before.yaml
+----
+
+This file provides immediate recovery if GitOps reconciliation has not yet run.
+
+=== Step 2: Block the backend network path
+
+Temporarily remove allowed egress from the Praxis pod. Praxis remains ready, but its configured external backend becomes unreachable.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+oc -n {project_name} patch networkpolicy praxis-ai-allow-required-traffic \
+  --type=merge -p '{"spec":{"egress":[]}}'
+oc -n {project_name} get deployment praxis-ai -o jsonpath='{.status.availableReplicas}{" gateway replica remains available\n"}'
 ----
 
 The gateway deployment should remain available even though inference cannot complete.
@@ -59,16 +60,15 @@ Observe that the failure occurs at the backend hop rather than requiring a diffe
 
 === Step 4: Reconcile the reviewed state
 
-Reapply the base and wait for recovery.
+Restore the policy captured before the fault.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-cd ~/praxis-lab
-oc -n {project_name} apply -k deploy/kustomize/base
-oc -n {project_name} rollout status deployment/mock-backend --timeout=180s
+oc -n {project_name} replace -f /tmp/praxis-egress-before.yaml
+oc -n {project_name} get networkpolicy praxis-ai-allow-required-traffic
 ----
 
-Kustomize restores the declared replica count.
+The restored policy allows the reviewed HTTPS and DNS egress paths again. OpenShift GitOps will also reconcile this resource back to the declared state.
 
 === Verify
 
@@ -85,4 +85,4 @@ The client response and validator should both return to green.
 
 == Key takeaway
 
-Gateway health, backend health, and request success are related but distinct signals. Explicit failure evidence and declarative recovery give platform teams predictable behavior without coupling clients to providers.
+Gateway readiness, backend reachability, and request success are related but distinct signals. Explicit failure evidence and declarative recovery give platform teams predictable behavior without coupling clients to providers.

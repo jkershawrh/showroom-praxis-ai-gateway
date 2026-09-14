@@ -1,4 +1,4 @@
-= Track 2: Observe routing for the exact request
+= Track 2: Correlate evidence for the exact request
 
 Networking demonstrations are difficult when learners see only a request and a response. As the platform operator, you need evidence that connects a visible topology, the selected logical model, and the exact request a learner just sent.
 
@@ -16,7 +16,7 @@ The learner UI creates a new W3C `traceparent` for every submission. It sends th
 
 This is intentionally different from asking an observability system for its most recent trace. Under concurrent use, the newest trace might belong to another learner or another request. Evidence must be queried using the identifier created for the request being explained.
 
-Track 1 provides honest local evidence even before a telemetry backend is connected. A later production implementation can use the same identifier with OpenTelemetry and OpenShift observability without changing the client contract.
+This release provides request correlation, not a completed distributed trace. A telemetry backend is intentionally not connected, so the lab must not describe a generated identifier as proof of every network hop. A later implementation can query OpenTelemetry and OpenShift observability with the same identifier without changing the client contract.
 
 The UI never receives the upstream credential. It is a teaching surface for topology and sanitized request results, not an administrative console.
 
@@ -71,4 +71,4 @@ Both concepts should be present in the UI source.
 
 == Key takeaway
 
-Useful observability explains one known request. By carrying an exact trace identifier and preserving the backend-neutral topology, the UI makes gateway behavior understandable without inventing evidence.
+Useful observability explains one known request and labels missing evidence honestly. This lab correlates one request with its response and topology. Full hop-by-hop tracing remains a future competency until a telemetry collector and backend are deployed and tested.

@@ -46,6 +46,17 @@ for module in MODULES:
         require('role="execute"' in marker, f"non-executable command block in {module.name}")
         require('subs="attributes+"' in marker, f"attributes disabled in {module.name}")
 
+portability = (PAGES / "03-prove-portability.adoc").read_text()
+for command in ("python3 clients/python/client.py", "javac -d", "npm run invoke"):
+    require(command in portability, f"polyglot live command is missing: {command}")
+assessment = (PAGES / "07-assess-evidence.adoc").read_text()
+require("tools/collect_evidence.py" in assessment, "learner evidence bundle is missing")
+conclusion = (PAGES / "08-conclusion.adoc").read_text()
+require("oc delete project" not in conclusion, "RHDP must own assigned-project cleanup")
+failure = (PAGES / "05-handle-failure.adoc").read_text()
+require("mock-backend" not in failure, "RHPDS failure exercise must not depend on the removed mock backend")
+require("praxis-ai-allow-required-traffic" in failure, "failure exercise must alter and restore the real gateway egress path")
+
 ui = yaml.safe_load((ROOT / "ui-config.yml").read_text())
 require({tab["name"] for tab in ui["tabs"]} == {"Terminal", "App UI", "OCP Console"}, "UI tabs are incomplete")
 antora_component = yaml.safe_load((ROOT / "content/antora.yml").read_text())
