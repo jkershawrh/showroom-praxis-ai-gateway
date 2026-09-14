@@ -20,7 +20,38 @@ Praxis is upstream software running on Red Hat OpenShift. The lab does not repre
 
 == Do: Test the deployment contract
 
-=== Step 1: Record the green baseline
+=== Step 1: Create a configuration red state
+
+Export the provisioned, non-secret Praxis configuration, then create a deliberately malformed learner copy. This does not alter the running gateway.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+oc -n {project_name} get configmap praxis-ai-config \
+  -o jsonpath='{.data.praxis-ai\.yaml}' > /tmp/praxis-valid.yaml
+printf 'listeners: [\n' > /tmp/praxis-invalid.yaml
+python3 tools/validate_config_on_openshift.py \
+  --project {project_name} --config /tmp/praxis-invalid.yaml \
+  && echo 'Unexpected success' || echo 'RED: invalid Praxis configuration rejected'
+----
+
+The ephemeral validator runs the pinned Praxis image and removes its Pod and ConfigMap afterward. Red is the expected result.
+
+=== Step 2: Produce a learner-owned green configuration
+
+Rename the listener in your copy—a safe metadata change—and validate it with the same Praxis binary.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+sed 's/name: ai-gateway/name: learner-gateway/' \
+  /tmp/praxis-valid.yaml > /tmp/praxis-learner.yaml
+python3 tools/validate_config_on_openshift.py \
+  --project {project_name} --config /tmp/praxis-learner.yaml
+----
+
+The result must be `Succeeded`. You created, changed, and validated Praxis configuration without exposing the backend credential or changing the RHDP-managed deployment.
+
+=== Step 3: Record the green runtime baseline
 
 [source,bash,role="execute",subs="attributes+"]
 ----
@@ -30,7 +61,7 @@ oc -n {project_name} get deployment,service,route,networkpolicy
 
 Both deployments should be available, and only the learner UI should have a Route.
 
-=== Step 2: Create a controlled red state
+=== Step 4: Create a controlled runtime red state
 
 Scale the gateway to zero replicas. This is safe in your single-user environment and makes the availability assertion fail for a known reason.
 
@@ -42,7 +73,7 @@ oc -n {project_name} wait --for=condition=Available deployment/praxis-ai --timeo
 
 The timeout and `RED` message prove that the check detects the broken state.
 
-=== Step 3: Observe GitOps recovery
+=== Step 5: Observe GitOps recovery
 
 Argo CD self-healing restores the declared replica count. Watch the Deployment return to green.
 
