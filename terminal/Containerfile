@@ -1,0 +1,22 @@
+FROM quay.io/rhpds/openshift-showroom-terminal-ocp:2026-03-11
+
+USER 0
+
+ARG RIPGREP_VERSION=15.1.0
+
+RUN dnf -y install \
+      nodejs \
+      npm \
+      python3-pip \
+    && dnf clean all \
+    && rm -rf /var/cache/dnf /root/.cache \
+    && wget -qO /tmp/ripgrep.tar.gz "https://github.com/BurntSushi/ripgrep/releases/download/${RIPGREP_VERSION}/ripgrep-${RIPGREP_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+    && tar -xzf /tmp/ripgrep.tar.gz -C /tmp \
+    && install -m 0755 "/tmp/ripgrep-${RIPGREP_VERSION}-x86_64-unknown-linux-musl/rg" /usr/local/bin/rg \
+    && rm -rf /tmp/ripgrep* \
+    && python3 -m pip install --no-cache-dir \
+      "httpx==0.28.1" \
+      "pytest==8.4.2" \
+      "PyYAML==6.0.3"
+
+USER lab-user

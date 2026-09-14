@@ -49,4 +49,15 @@ Clone the tested quickstart so later exercises use the same client and validatio
 git clone {quickstart_repo} ~/praxis-lab && cd ~/praxis-lab
 ----
 
+Prepare the pinned learner toolchain. The current standard RHDP terminal already provides OpenShift, Python, and Java; this project-local bootstrap adds the tested Python dependencies, Node.js, and `rg` without requiring administrator access.
+
+[source,bash,role="execute",subs="attributes+"]
+----
+cd ~/praxis-lab
+bash tools/bootstrap_learner.sh
+export PATH="$HOME/.local/bin:$PATH"
+----
+
+The command prints the versions used by the remaining exercises.
+
 You are ready when `README.md`, `deploy/`, `runtime-automation/`, and `tests/` are present.

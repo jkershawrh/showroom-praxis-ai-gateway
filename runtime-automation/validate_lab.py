@@ -20,6 +20,7 @@ require((ROOT / "default-site.yml").is_file(), "default-site.yml is missing")
 require((ROOT / "ui-config.yml").is_file(), "ui-config.yml is missing")
 require((ROOT / "content/antora.yml").is_file(), "antora.yml is missing")
 require((ROOT / "content/supplemental-ui").is_dir(), "supplemental UI is missing")
+require((ROOT / "terminal/Containerfile").is_file(), "Praxis learner terminal image definition is missing")
 require(len(MODULES) >= 5, "at least five hands-on modules are required")
 for required in [
     "publishing-house/spec.yaml",
@@ -90,6 +91,8 @@ require(catalog["praxis_model_api_key"] == "{{ litellm_virtual_key }}", "Praxis 
 showroom_ui = yaml.safe_load(catalog["ocp4_workload_showroom_content_ui_config"])
 require(all(tab.get("url") or tab.get("port") for tab in showroom_ui["tabs"]), "every deployed Showroom tab must define a URL or port")
 require(catalog["ocp4_workload_showroom_terminal_type"] == "showroom", "Showroom must deploy the terminal referenced by the UI config")
+access = (PAGES / "01-accessing-cluster.adoc").read_text()
+require("tools/bootstrap_learner.sh" in access, "standard RHDP terminal must bootstrap the pinned learner toolchain")
 require(not catalog["ocp4_workload_litellm_virtual_keys_enable_user_info_data"], "LiteMaaS credentials must not enter user data")
 
 user_data = catalog.get("ocp4_workload_showroom_user_data", {})
