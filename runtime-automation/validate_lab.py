@@ -21,6 +21,7 @@ require((ROOT / "ui-config.yml").is_file(), "ui-config.yml is missing")
 require((ROOT / "content/antora.yml").is_file(), "antora.yml is missing")
 require((ROOT / "content/supplemental-ui").is_dir(), "supplemental UI is missing")
 require((ROOT / "terminal/Containerfile").is_file(), "Praxis learner terminal image definition is missing")
+require((ROOT / "docs/sa-presenter-guide.md").is_file(), "SA presenter guide is missing")
 require(len(MODULES) >= 5, "at least five hands-on modules are required")
 for required in [
     "publishing-house/spec.yaml",
@@ -41,22 +42,25 @@ for target in re.findall(r"xref:([^\[]+)", nav):
 for module in MODULES:
     text = module.read_text()
     require(len(text.splitlines()) >= 50, f"module is too short: {module.name}")
-    for heading in ["== What you will learn", "== See:", "== Do:", "== Key takeaway"]:
+    for heading in ["== Customer outcome", "== Know:", "== Show:", "== Customer discussion", "== Evidence", "== Key takeaway"]:
         require(heading in text, f"{module.name} lacks {heading}")
     for marker in re.findall(r"\[source,bash[^\]]*\]", text):
         require('role="execute"' in marker, f"non-executable command block in {module.name}")
         require('subs="attributes+"' in marker, f"attributes disabled in {module.name}")
 
+all_content = "\n".join(path.read_text() for path in PAGES.glob("*.adoc"))
+require("github.com/jkershawrh/praxis-lab" not in all_content, "participant content must not depend on the private engineering repository")
+require("git clone" not in all_content, "participant content must not require a source clone")
 portability = (PAGES / "03-prove-portability.adoc").read_text()
-for command in ("python3 clients/python/client.py", "javac -d", "npm run invoke"):
-    require(command in portability, f"polyglot live command is missing: {command}")
+require("$PRAXIS_BASE_URL/v1/chat/completions" in portability, "stable Praxis API demonstration is missing")
+require("model-backend-credentials" in portability, "platform credential boundary is missing")
 assessment = (PAGES / "07-assess-evidence.adoc").read_text()
-require("tools/collect_evidence.py" in assessment, "learner evidence bundle is missing")
+require("contract-ready" in assessment and "does not yet emit native live PPE" in assessment, "preview evidence boundary is missing")
 conclusion = (PAGES / "08-conclusion.adoc").read_text()
 require("oc delete project" not in conclusion, "RHDP must own assigned-project cleanup")
 gateway = (PAGES / "02-deploy-gateway.adoc").read_text()
-require("tools/validate_config_on_openshift.py" in gateway, "learner-owned Praxis configuration validation is missing")
-require("praxis-invalid.yaml" in gateway and "praxis-learner.yaml" in gateway, "configuration exercise must show red and green learner states")
+require("App UI" in gateway, "customer path must lead with the application experience")
+require("model-backend-credentials" in gateway, "credential-reference proof is missing")
 failure = (PAGES / "05-handle-failure.adoc").read_text()
 require("mock-backend" not in failure, "RHPDS failure exercise must not depend on the removed mock backend")
 require("praxis-ai-allow-required-traffic" in failure, "failure exercise must alter and restore the real gateway egress path")
@@ -95,8 +99,13 @@ showroom_ui = yaml.safe_load(catalog["ocp4_workload_showroom_content_ui_config"]
 require(all(tab.get("url") or tab.get("port") for tab in showroom_ui["tabs"]), "every deployed Showroom tab must define a URL or port")
 require(catalog["ocp4_workload_showroom_terminal_type"] == "showroom", "Showroom must deploy the terminal referenced by the UI config")
 access = (PAGES / "01-accessing-cluster.adoc").read_text()
-require("tools/bootstrap_learner.sh" in access, "standard RHDP terminal must bootstrap the pinned learner toolchain")
+require("App UI" in access, "customer orientation must start with the application")
+require("oc project -q" in access, "participant namespace proof is missing")
 require(not catalog["ocp4_workload_litellm_virtual_keys_enable_user_info_data"], "LiteMaaS credentials must not enter user data")
+
+for qa_file in ("qa-automation/healthcheck.yml", "qa-automation/e2e.yml"):
+    qa_text = (ROOT / qa_file).read_text()
+    require('praxis_lab_namespace: "user-{{ guid }}-praxis"' in qa_text, f"{qa_file} must use the catalog namespace contract")
 
 user_data = catalog.get("ocp4_workload_showroom_user_data", {})
 require(not any("maas" in key.lower() or "litellm" in key.lower() or "key" in key.lower() for key in user_data), "Showroom user data must not receive MaaS credentials")

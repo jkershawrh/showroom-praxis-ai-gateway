@@ -3,7 +3,7 @@
   hosts: localhost
   gather_facts: false
   vars:
-    praxis_lab_namespace: "praxis-ai-gateway-{{ guid }}"
+    praxis_lab_namespace: "user-{{ guid }}-praxis"
   tasks:
     - name: Read Praxis deployment
       kubernetes.core.k8s_info:

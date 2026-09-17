@@ -1,44 +1,59 @@
 = Conclusion
 
-You built and assessed a governed AI model-access boundary rather than another provider-specific client integration.
+You explored a governed AI model-access boundary from the customer application
+through Praxis to a replaceable backend on Red Hat OpenShift.
 
-== What you accomplished
+== What was demonstrated
 
-* Verified and recovered Praxis AI Gateway on an AMD64 OpenShift worker
-* Kept the model credential in an OpenShift Secret
-* Proved that clients depend only on the Praxis endpoint
-* Correlated a learner request with its response and trace identifier without claiming unavailable hop-by-hop telemetry
-* Exercised explicit failure behavior and recovery
-* Evaluated tenant, data, retention, and industry-policy decisions
-* Preserved MaaS as a replaceable lab model source
-* Created a sanitized, reusable evidence and readiness bundle
+* A live application request crossed the Praxis gateway boundary.
+* The application used a stable contract without the upstream model credential.
+* OpenShift stored the credential as a Secret reference.
+* Praxis remained internal while the learner UI used OpenShift OAuth.
+* Request evidence stayed correlated to the exact request identifier.
+* Optional modules separated gateway health, backend reachability, and request outcomes.
+* Governance discussion distinguished implemented controls from preview capabilities.
 
-== Preserve your work
+== What was not claimed
 
-List the learner-created archive and use the terminal file browser or download function to save it before the RHDP environment expires.
+The session did not establish regulatory compliance, production readiness,
+full distributed tracing, universal provider compatibility, or native live PPE
+audit emission. Those outcomes require customer-specific design and validation.
 
-[source,bash,role="execute",subs="attributes+"]
-----
-ls -lh ~/praxis-lab/artifacts/praxis-evidence-*.tar.gz
-----
+== Customer next step
 
-Stop the local port-forward. RHDP owns project and credential cleanup when the service is deleted; do not manually delete the assigned project unless an instructor directs you to do so.
+Select one bounded proof from the architecture mapping exercise. A strong next
+step uses a representative application, an approved model endpoint, explicit
+identity and data assumptions, and evidence agreed before implementation.
+
+If the customer wants implementation depth, continue with the private
+engineering quickstart in a separate technical working session. It is not
+required for this participant experience.
+
+== Environment ownership
+
+RHDP owns project and credential cleanup when the service is deleted. Do not
+manually delete the assigned project unless the facilitator directs you to do
+so.
+
+Stop any local port-forward created during the session:
 
 [source,bash,role="execute",subs="attributes+"]
 ----
 pkill -f 'port-forward service/praxis-ai' || true
 ----
 
-== Next steps
+== Further reading
 
-* Review the https://github.com/jkershawrh/praxis-lab[Praxis quickstart source and evidence].
 * Explore the https://github.com/praxis-proxy/ai[Praxis upstream project].
-* Plan the replaceable enterprise backend with https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/[Red Hat OpenShift AI documentation].
-* Add a tested OAuth or OpenID Connect boundary before exposing a real model through a public route.
-* Validate Track 2 and Track 3 policies against your organization's threat model and retention requirements.
+* Review https://docs.redhat.com/en/documentation/red_hat_openshift_ai_self-managed/[Red Hat OpenShift AI documentation].
+* Use the optional operations and governance modules to prepare a deeper architecture session.
 
 == Final perspective
 
-An AI gateway is useful because it concentrates change: clients retain a stable contract while platform teams evolve model providers, routing, evidence, and controls. This lab proves deployment recovery, live polyglot access, credential ownership, controlled failure, and OpenShift isolation. It deliberately labels telemetry and policy capabilities that are not implemented by this pinned experience instead of turning future work into a demo claim.
+An AI gateway concentrates change. Applications retain a stable contract while
+platform teams evolve model endpoints, credentials, operations, and policy
+boundaries. OpenShift supplies the enterprise platform controls around that
+gateway; customer requirements determine which additional capabilities must be
+proven next.
 
 Powered by Red Hat OpenShift running on {intel_platform} processors.

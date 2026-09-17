@@ -1,87 +1,84 @@
-= Track 3: Isolate tenants and sensitive data
+= Assess isolation and data controls
 
-Regulated and industry-sensitive teams often share a platform but must not share credentials, policy decisions, or request evidence accidentally. You will inspect namespace and network controls, then define where content screening must occur.
+This optional governance module helps security and architecture stakeholders
+locate the controls that surround an AI gateway. It assesses the provisioned
+OpenShift boundary and identifies policy decisions that remain customer
+specific.
 
-== What you will learn
+== Customer outcome
 
-* Identify tenant boundaries enforced by OpenShift
+* Identify identity, namespace, network, Secret, and data-policy boundaries
 * Distinguish network isolation from application authorization
-* Place sensitive-data controls before external model access
+* Decide where sensitive-content controls must execute
 
-== See: Defense in depth
+== Know: Defense in depth
 
-image::architecture.svg[Governance boundaries around Praxis and the configured model backend,link=self,window=_blank]
+The namespace is the first tenant boundary in this environment. OpenShift
+role-based access control governs who can inspect and change resources.
+NetworkPolicy restricts communication paths, while Secrets separate
+credentials from non-secret configuration.
 
-The namespace is the first tenant boundary in this lab. OpenShift role-based access control governs who can modify resources and who can create a port-forward. NetworkPolicies restrict pod communication, while Secrets separate credentials from configuration.
+Those controls do not authenticate an arbitrary business caller. A
+NetworkPolicy governs packets, not business identity. A production public API
+requires a designed and tested OAuth or OpenID Connect boundary and explicit
+authorization rules.
 
-Those controls do not authenticate an arbitrary public HTTP caller. A NetworkPolicy governs network paths, not business identity. Before a real backend is exposed by Route, the platform needs an OAuth or OpenID Connect ingress component with tested authorization rules.
+Sensitive-data controls must run before content leaves the controlled
+environment. Depending on the organization, that may mean rejecting,
+redacting, tokenizing, or routing a request to an approved local model.
 
-Sensitive-data controls must run before content leaves the controlled environment. Depending on the organization, that might mean rejecting, redacting, tokenizing, or routing a request to an approved local model. This lab examines the control points but does not claim compliance.
+Evidence has its own sensitivity. Trace identifiers, model names, timestamps,
+and decisions are usually safer than retaining complete prompts and responses.
 
-Evidence has its own sensitivity. Trace identifiers, model names, timestamps, and decisions are usually safer than complete prompts and responses. Retention must be explicit rather than inherited accidentally from default logs.
-
-== Do: Inspect and challenge the boundaries
-
-=== Step 1: Inspect namespace access
-
-Ask OpenShift whether your current identity may retrieve Secrets and create pod port-forwards.
+== Show: Inspect namespace authorization
 
 [source,bash,role="execute",subs="attributes+"]
 ----
 oc -n {project_name} auth can-i get secrets
 oc -n {project_name} auth can-i create pods/portforward
+oc -n {project_name} auth can-i create clusterroles
 ----
 
-Record the answers as part of the tenant-access evidence.
+Interpret the answers rather than assuming that all participants or production
+applications should have the same permissions.
 
-=== Step 2: Inspect network policy
-
-List policy names and the pod selectors they protect.
+== Show: Inspect network and credential boundaries
 
 [source,bash,role="execute",subs="attributes+"]
 ----
 oc -n {project_name} get networkpolicy
 oc -n {project_name} describe networkpolicy praxis-lab-default-deny
+oc -n {project_name} get deployment praxis-ai \
+  -o jsonpath='{range .spec.template.spec.containers[0].env[*]}{.name}{" -> "}{.valueFrom.secretKeyRef.name}{"\n"}\{end}'
 ----
 
-The default-deny policy should select the Praxis pod; allow rules then add only required traffic.
+The output may show Secret references, but it must not print Secret values.
+Confirm that the default-deny policy selects the gateway workload and that
+specific policies add only required paths.
 
-=== Step 3: Confirm the real-backend overlay closes public ingress
+== Customer discussion
 
-Render the RHPDS overlay and check that it contains no Route.
+Use these prompts to select a target design:
 
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab
-kubectl kustomize deploy/kustomize/overlays/rhpds >/tmp/rhpds-rendered.yaml
-if grep -q '^kind: Route$' /tmp/rhpds-rendered.yaml; then echo 'RED: public route present'; else echo 'GREEN: no public route'; fi
-----
+* Which identities—people, applications, agents, or tenants—must be attributed?
+* Which models are approved for each identity and data class?
+* Must sensitive content be rejected, transformed, or routed locally?
+* Which metadata may be retained, where, and for how long?
+* What happens when policy or evidence services are unavailable?
+* Which teams approve policy changes and investigate exceptions?
 
-The result should be green. Port-forward access remains governed by OpenShift authorization.
+The answers determine whether namespace separation is sufficient or whether
+the target architecture requires additional gateway authorization, policy
+engines, workload identity, or dedicated environments.
 
-=== Step 4: Review the data decision
+== Evidence
 
-Search the design and feature contract for sensitive-data and tenant expectations.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab
-rg -n -i 'sensitive|tenant|retention|compliance' DESIGN.md features docs
-----
-
-Separate implemented controls from planned or preview capabilities when discussing the results.
-
-=== Verify
-
-Run the infrastructure tests that lock down the RHPDS overlay.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab && python3 -m pytest tests/infrastructure/test_rhpds_overlay.py -q
-----
-
-All overlay tests should pass.
+The customer has inspected real RBAC answers, NetworkPolicies, and Secret
+references. The session has also separated implemented OpenShift controls from
+application authorization and future policy capabilities.
 
 == Key takeaway
 
-Tenant governance combines identity, namespace authorization, network paths, secret ownership, and data policy. No single gateway setting replaces those layers, and completing this exercise does not establish regulatory compliance.
+Tenant governance combines identity, authorization, network paths, credential
+ownership, and data policy. No single gateway setting replaces those layers,
+and completing this exercise does not establish regulatory compliance.

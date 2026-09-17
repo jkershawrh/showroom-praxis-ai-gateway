@@ -1,63 +1,61 @@
-= Access the lab environment
+= Orient to the customer experience
 
-Showroom provides a terminal already authenticated to your assigned OpenShift project. Begin by confirming identity, architecture, and capacity so later failures are not confused with access problems.
+The environment is already provisioned so the customer conversation can begin
+with the application outcome. Showroom provides Instructions, an OAuth-protected
+App UI, a namespace-scoped Terminal, and the OpenShift Console.
 
-== Confirm your identity
+== Start with the application
 
-This command displays the OpenShift user represented by the current terminal session.
+Open the *App UI* tab. Confirm that the page shows the request path from the
+application through Praxis to a configured model backend.
+
+Do not submit customer data. Use a neutral prompt such as:
+
+[source,text]
+----
+Explain in two sentences why an application team might use an AI gateway.
+----
+
+Submit the request and retain the displayed status, model, elapsed time, and
+trace ID. These values anchor the rest of the guided discussion.
+
+== Confirm the participant boundary
+
+Open the *Terminal* tab. It is already authenticated to the assigned OpenShift
+project; no source repository or credential setup is required.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
 oc whoami
+oc project -q
 ----
 
-The result should be `{user}` or the user identity assigned by the environment.
+The project must be `{project_name}`. Stop and contact the facilitator if it is
+not. The participant should work only in this namespace.
 
-== Confirm the target project
-
-Select the namespace provisioned for this lab. Publishing House created it before Showroom started.
+Confirm that namespaced application inspection is allowed while cluster-wide
+node inspection is not part of the participant role.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-oc project {project_name}
+oc auth can-i get deployments.apps -n {project_name}
+oc auth can-i get nodes
 ----
 
-Verify that the CLI now reports the expected project.
+The first answer should be `yes`. The second should normally be `no` for a
+tenant participant.
 
-[source,bash,role="execute",subs="attributes+"]
-----
-oc project
-----
+== Customer discovery
 
-== Confirm Intel-compatible worker architecture
+Before continuing, identify the customer concern that should guide optional
+depth:
 
-Praxis v0.3.0 currently publishes an AMD64 image. Inspect schedulable worker architectures before deploying it.
+* application teams are coupled to individual providers;
+* credentials and endpoints are distributed across repositories;
+* platform teams cannot explain or correlate model access;
+* security teams need identity, data-handling, or evidence controls; or
+* operations teams need predictable failure and recovery behavior.
 
-[source,bash,role="execute",subs="attributes+"]
-----
-oc get nodes -l node-role.kubernetes.io/worker -o custom-columns=NAME:.metadata.name,ARCH:.status.nodeInfo.architecture
-----
-
-At least one worker should report `amd64`. The lab requires no accelerator because model inference is supplied remotely.
-
-== Obtain the source
-
-Clone the tested quickstart so later exercises use the same client and validation contracts as CI. During private development, Publishing House must provide repository access; the publication workflow will move or expose the approved source location.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-git clone {quickstart_repo} ~/praxis-lab && cd ~/praxis-lab
-----
-
-Prepare the pinned learner toolchain. The current standard RHDP terminal already provides OpenShift, Python, and Java; this project-local bootstrap adds the tested Python dependencies, Node.js, and `rg` without requiring administrator access.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab
-bash tools/bootstrap_learner.sh
-export PATH="$HOME/.local/bin:$PATH"
-----
-
-The command prints the versions used by the remaining exercises.
-
-You are ready when `README.md`, `deploy/`, `runtime-automation/`, and `tests/` are present.
+The guided path addresses the first two concerns. Operations and governance
+modules address the remaining concerns without claiming that every preview
+capability is implemented in the pinned gateway.

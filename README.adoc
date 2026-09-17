@@ -1,8 +1,13 @@
-= Govern AI Model Access with Praxis — RHDP Lab
+= Govern AI Model Access with Praxis — RHDP guided customer lab
 
-This repository contains one progressive Showroom lab with three tracks: governed access, platform operations, and industry-sensitive governance. Track 1 is also published independently as the short quickstart experience.
+This repository contains one progressive Showroom experience for Red Hat
+solution architects and customer teams. The default path is a 20–30 minute
+guided demonstration of governed AI model access. Optional modules extend the
+conversation into platform operations and industry-sensitive governance.
 
-The repository remains private during development. RHPDS provisioning and learner environments therefore require authorized GitHub access until the content is approved for broader publication.
+This Showroom repository is public so RHDP can render the content and deploy
+its automation. The private engineering quickstart is not a participant
+dependency; customer-facing exercises use the provisioned environment directly.
 
 This personal staging location is temporary because the current contributor account cannot create repositories in the `rhpds` organization. Transfer it to `rhpds/showroom-praxis-ai-gateway` after an organization owner creates or accepts the destination.
 
@@ -12,11 +17,13 @@ The catalog provisions model access through the standard RHDP LiteMaaS virtual-k
 
 This repository follows the Publishing House monorepo pattern:
 
-* `content/` contains the three-track Showroom lab.
+* `content/` contains the guided customer journey and optional technical depth.
 * `automation/ansible/` creates sensitive runtime configuration.
 * `automation/gitops/` deploys Praxis and the OAuth-protected learner UI.
 * `qa-automation/` contains live health and end-to-end gates.
 * `publishing-house/` records the intake specification and publication prerequisites.
+* `docs/sa-presenter-guide.md` contains presenter preparation, talk tracks,
+  discovery prompts, and recovery guidance.
 
 == Build locally
 

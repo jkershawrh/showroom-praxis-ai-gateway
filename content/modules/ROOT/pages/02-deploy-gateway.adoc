@@ -1,106 +1,91 @@
-= Track 1: Verify and recover the governed gateway
+= Show governed model access
 
-You are the platform engineer for teams that currently copy model credentials into each application. Your first objective is to prove that OpenShift and Praxis—not individual client repositories—own the model-access boundary.
+The first customer question is simple: can an application use a model without
+owning the provider endpoint and credential? This module demonstrates the
+answer through the provisioned application before exposing implementation
+details.
 
-== What you will learn
+== Customer outcome
 
-* Recognize the client, gateway, and backend trust boundaries
-* Use a controlled red state to test the recovery contract
-* Verify GitOps reconciliation and gateway-owned credentials
+* Observe one request crossing the gateway boundary
+* Identify the responsibilities of the application, Praxis, and OpenShift
+* Prove that the upstream model credential remains platform managed
 
-== See: The controlled request path
+== Know: Why the boundary matters
 
-image::architecture.svg[Track 1 request path through Praxis to a configured backend,link=self,window=_blank]
+Without a gateway, each application team commonly chooses a model endpoint,
+stores a credential, and writes provider-specific integration code. Changing a
+provider or credential then requires coordinated application changes.
 
-The application sends an OpenAI-compatible request to Praxis. It does not receive the backend URL or backend credential. Praxis selects the configured backend and injects authorization only as the request crosses the gateway boundary.
+Praxis provides an OpenAI-compatible application boundary. The application
+sends a request to Praxis; Praxis selects the configured backend and injects
+the upstream authorization value. OpenShift supplies the workload, Secret,
+network, identity, and lifecycle boundaries around that request path.
 
-Publishing House has already created the runtime ConfigMap and Secret from the endpoint and per-order virtual key produced by the RHDP LiteMaaS workload. Argo CD deploys Praxis and an OAuth-protected learner UI without receiving the virtual key as a Helm value. Your task is to prove that deployment contract, deliberately break availability, and recover the reviewed state. This is an operations exercise; it does not pretend that you manually installed infrastructure that RHDP provisioned.
+Praxis is upstream software running on Red Hat OpenShift. It is not represented
+as a supported Red Hat product. RHDP MaaS supplies replaceable model access for
+this exercise and is not a Praxis dependency.
 
-Praxis is upstream software running on Red Hat OpenShift. The lab does not represent it as a supported Red Hat product. MaaS supplies a replaceable LLM because the demonstration platform shares model capacity across labs.
+== Show: One governed request
 
-== Do: Test the deployment contract
+Open the *App UI* tab and submit this neutral prompt:
 
-=== Step 1: Create a configuration red state
+[source,text]
+----
+List three responsibilities that belong to an enterprise AI platform team.
+----
 
-Export the provisioned, non-secret Praxis configuration, then create a deliberately malformed learner copy. This does not alter the running gateway.
+Use the visible topology to narrate the path:
+
+. The application knows the Praxis endpoint.
+. Praxis owns backend selection and upstream authorization.
+. The configured backend produces the model response.
+. OpenShift protects and operates the workloads.
+
+Point out the returned model, HTTP status, elapsed time, and exact trace ID.
+The model response is useful, but the stable boundary is the primary proof.
+
+== Show: Prove the credential boundary
+
+Open the *Terminal* tab and inspect only the Deployment reference. Do not read
+or print the Secret value.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-cd ~/praxis-lab
-oc -n {project_name} get configmap praxis-ai-config \
-  -o jsonpath='{.data.praxis-ai\.yaml}' > /tmp/praxis-valid.yaml
-printf 'listeners: [\n' > /tmp/praxis-invalid.yaml
-python3 tools/validate_config_on_openshift.py \
-  --project {project_name} --config /tmp/praxis-invalid.yaml \
-  && echo 'Unexpected success' || echo 'RED: invalid Praxis configuration rejected'
+oc -n {project_name} get deployment praxis-ai \
+  -o jsonpath='{.spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name}{"\n"}'
 ----
 
-The ephemeral validator runs the pinned Praxis image and removes its Pod and ConfigMap afterward. Red is the expected result.
+The expected result is `model-backend-credentials`. The Deployment contains a
+reference rather than a literal API key.
 
-=== Step 2: Produce a learner-owned green configuration
-
-Rename the listener in your copy—a safe metadata change—and validate it with the same Praxis binary.
+Confirm that Praxis itself has no public Route:
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-sed 's/name: ai-gateway/name: learner-gateway/' \
-  /tmp/praxis-valid.yaml > /tmp/praxis-learner.yaml
-python3 tools/validate_config_on_openshift.py \
-  --project {project_name} --config /tmp/praxis-learner.yaml
+oc -n {project_name} get route
 ----
 
-The result must be `Succeeded`. You created, changed, and validated Praxis configuration without exposing the backend credential or changing the RHDP-managed deployment.
+Only the OAuth-protected learner UI should be exposed. Direct gateway access is
+available to an authorized namespace user through OpenShift port-forwarding.
 
-=== Step 3: Record the green runtime baseline
+== Customer discussion
 
-[source,bash,role="execute",subs="attributes+"]
-----
-oc -n {project_name} wait --for=condition=Available deployment/praxis-ai deployment/praxis-ui --timeout=180s
-oc -n {project_name} get deployment,service,route,networkpolicy
-----
+Ask where the customer currently stores model endpoints and credentials. Then
+identify which application releases would be required to rotate a key or move
+to another compatible model endpoint today.
 
-Both deployments should be available, and only the learner UI should have a Route.
+The exercise does not claim that a gateway alone supplies application
+authorization, data classification, or regulatory compliance. Those require
+explicit identity and policy designs.
 
-=== Step 4: Create a controlled runtime red state
+== Evidence
 
-Scale the gateway to zero replicas. This is safe in your single-user environment and makes the availability assertion fail for a known reason.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-oc -n {project_name} scale deployment/praxis-ai --replicas=0
-oc -n {project_name} wait --for=condition=Available deployment/praxis-ai --timeout=10s || echo "RED: gateway unavailable as expected"
-----
-
-The timeout and `RED` message prove that the check detects the broken state.
-
-=== Step 5: Observe GitOps recovery
-
-Argo CD self-healing restores the declared replica count. Watch the Deployment return to green.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-oc -n {project_name} wait --for=condition=Available deployment/praxis-ai --timeout=180s
-oc -n {project_name} get deployment praxis-ai -o jsonpath='{.status.availableReplicas}{" available\n"}'
-----
-
-If reconciliation takes longer than expected, inspect the application without changing its desired state.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-oc -n openshift-gitops get application praxis-ai-gateway-{guid}
-----
-
-=== Verify
-
-Confirm that the backend credential is a Secret reference rather than a literal environment value.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-oc -n {project_name} get deployment praxis-ai -o jsonpath='{.spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name}{"\n"}'
-----
-
-The result must be `model-backend-credentials`. Do not retrieve or print the Secret value.
+The customer has seen a live model result, the gateway topology, a
+Secret-backed credential reference, and the absence of a direct public gateway
+Route.
 
 == Key takeaway
 
-The gateway boundary is an observable, reconciled platform resource. The red/green exercise proves both the availability assertion and GitOps recovery, while the deployment definition proves that application configuration contains only a Secret reference.
+Applications use one stable contract while platform owners retain control of
+backend configuration and credentials on OpenShift.

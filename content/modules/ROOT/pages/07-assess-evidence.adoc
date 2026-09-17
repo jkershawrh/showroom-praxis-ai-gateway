@@ -1,89 +1,98 @@
-= Track 3: Assess industry evidence
+= Map the customer architecture
 
-Executives and auditors need more than a successful demo, but different industries care about different failure modes. You will use the competency matrix to evaluate evidence without turning a technical lab into an unsupported compliance claim.
+The closing governance exercise converts the demonstration into a customer
+architecture conversation. It records what was proven, what remains a preview,
+and which decisions belong in a proof of concept.
 
-== What you will learn
+== Customer outcome
 
-* Map industry concerns to platform control evidence
-* Separate verified, planned, preview, and unsupported capabilities
-* Produce a defensible go/no-go assessment
+* Separate implemented, demonstrated, preview, and target-state capabilities
+* Map customer concerns to OpenShift and gateway responsibilities
+* Define a bounded next step without making unsupported compliance claims
 
-== See: Evidence before claims
+== Know: Evidence before claims
 
-image::architecture.svg[Praxis platform evidence spanning clients gateway and model backend,link=self,window=_blank]
+Different industries emphasize different risks. Banking teams may prioritize
+tenant attribution, approved-model routing, and retention. Healthcare teams
+may emphasize data minimization and controlled egress. Government environments
+may require reproducible configuration and stronger authorization boundaries.
+Manufacturing and telecommunications teams may focus on availability and
+centralized change control.
 
-Banking teams may prioritize tenant attribution, approved-model routing, and retention. Healthcare providers may emphasize data minimization and controlled egress. Government environments may prioritize authorization boundaries and reproducible configuration. Manufacturing and telecommunications teams may focus on availability and centralized change control.
+These motivations overlap, but the policies are not interchangeable. Legal,
+privacy, security, and records teams must approve the target design.
 
-These motivations overlap, but their policies are not interchangeable. The lab therefore uses scenario profiles rather than claiming a universal industry configuration. Legal, privacy, security, and records teams must approve the target design.
+The pinned experience proves a gateway boundary, Secret ownership, an internal
+Praxis service, an authenticated learner UI, exact-request correlation, and
+controlled OpenShift recovery. It does not prove full distributed tracing,
+production authorization, dynamic policy routing, or compliance.
 
-The capability matrix labels each Praxis feature by evidence maturity. A released and tested function can support a hands-on requirement. An experimental demonstration can inform a discussion but cannot silently become a production promise.
+The Praxis Policy Engine to OCSF immutable-ledger path is a contract-ready
+preview. The reference adapter can validate versioned fixtures, but the pinned
+Praxis build does not yet emit native live PPE audit events through that path.
 
-The claim registry applies the same discipline to numbers. Hardware estimates and completion time remain unverified until measured in the target environment. Honest uncertainty is stronger evidence than false precision.
-
-== Do: Build an evidence assessment
-
-=== Step 1: Review capability maturity
-
-Read the matrix and identify which capabilities are core, optional, preview, or deferred.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab
-sed -n '1,240p' docs/capability-matrix.md
-----
-
-Do not promote an experimental Grid or policy-engine example into the core lab without release evidence.
-
-=== Step 2: Inspect the claim registry
-
-List every quantified claim and its verification state.
+== Show: Review the demonstrated evidence
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-cd ~/praxis-lab
-python3 -c 'import yaml; d=yaml.safe_load(open("tests/claim_registry.yaml")); [print(c["id"], c["verified"]) for c in d["claims"]]'
+oc -n {project_name} get deployment,service,route,networkpolicy
+oc -n {project_name} get deployment praxis-ai \
+  -o jsonpath='{.spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name}{"\n"}'
 ----
 
-Unverified values must remain labeled as estimates rather than guarantees.
+Relate this platform state to the App UI request and exact trace ID retained
+earlier in the session.
 
-=== Step 3: Choose an industry scenario
+== Customer discussion
 
-Choose a scenario, then create a sanitized evidence bundle that survives the lab session. The collector intentionally excludes Secrets, prompts, responses, and access tokens.
+Record one answer for each category:
 
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab
-python3 tools/collect_evidence.py \
-  --project {project_name} \
-  --scenario "healthcare provider shared AI access"
-ls -lh artifacts/praxis-evidence-*.tar.gz
-----
+[cols="1,2,2",options="header"]
+|===
+| Category | Demonstrated today | Customer decision or gap
 
-Open the generated `assessment.md` and adapt the scenario, missing controls, and decision to your organization. Keep the archive; it is the learner-created deliverable from this lab.
+| Application contract
+| OpenAI-compatible request through Praxis
+| Required client protocols and provider extensions
 
-=== Step 4: Run publication safeguards
+| Model serving
+| Replaceable RHDP MaaS endpoint
+| OpenShift AI, external service, or hybrid model strategy
 
-Execute the tests that prevent unsupported product, architecture, and compliance wording.
+| Identity and authorization
+| OpenShift participant and namespace boundary
+| Application, workload, tenant, and policy identities
 
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab && python3 -m pytest tests/publication tests/contracts -q
-----
+| Observability
+| Exact-request identifier, status, model, and elapsed time
+| Metrics, logs, traces, attribution, and retention
 
-All safeguards should pass.
+| Governance evidence
+| Sanitized resource and control inspection
+| Policy decisions, OCSF mapping, ledger, and audit workflow
+|===
 
-=== Verify
+== Define the next proof
 
-Confirm the assessment contains no unconditional compliance assertion.
+Choose one bounded follow-on outcome:
 
-[source,bash,role="execute",subs="attributes+"]
-----
-ASSESSMENT=$(find ~/praxis-lab/artifacts -name assessment.md -print | tail -1)
-if grep -Eqi 'is compliant|guarantees compliance|certified compliant' "$ASSESSMENT"; then echo RED; else echo GREEN; fi
-----
+* connect a customer-approved model endpoint through Praxis;
+* integrate one representative application without its provider credential;
+* demonstrate an approved-model or tenant authorization decision;
+* connect the customer's observability platform using exact trace correlation;
+  or
+* validate a PPE decision-to-evidence contract without model content.
 
-The result should be green.
+Define the owner, target environment, success evidence, and explicit
+out-of-scope items. Avoid a proof of concept that attempts every optional
+capability at once.
+
+== Evidence
+
+The customer leaves with a shared distinction between what the lab proved,
+what was discussed, and what requires target-environment validation.
 
 == Key takeaway
 
-Industry alignment starts with explicit evidence and ownership, not a compliance badge. You leave with a sanitized bundle and assessment that reviewers can refine, while clearly separating what the lab proved from what still requires production validation.
+The useful outcome is a defensible architecture decision and bounded next
+proof—not an unsupported production or compliance claim.

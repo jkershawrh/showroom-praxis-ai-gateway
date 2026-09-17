@@ -1,37 +1,57 @@
 = Govern AI Model Access with Praxis
 
-Application teams lose time and control when every service owns a different model endpoint, credential, and routing rule. In this lab, you act as an enterprise AI platform engineer and build one governed model-access boundary on Red Hat OpenShift.
+Application teams lose time and control when every service owns a different
+model endpoint, credential, and provider-specific integration. In this guided
+experience, a Red Hat solution architect works with your application,
+platform, and security stakeholders to explore one governed model-access
+boundary on Red Hat OpenShift.
 
-The lab has three progressive tracks. Track 1 establishes access, Track 2 makes routing and failure behavior observable, and Track 3 examines controls needed by industry-sensitive workloads. Red Hat Demo Platform Model-as-a-Service (MaaS) supplies an LLM for exercises; it is a replaceable lab dependency, not the architecture being recommended.
+The default customer path takes approximately 20–30 minutes. It shows one
+request through Praxis, proves that the application remains separated from the
+model credential and backend, and connects the result to your architecture.
+Optional operations and governance modules extend the session to 60–90
+minutes when those topics matter to the customer conversation.
 
-== What you will learn
+Red Hat Demo Platform Model-as-a-Service (MaaS) supplies an LLM for the
+exercise. MaaS is replaceable lab model access, not the production architecture
+being recommended.
 
-* Separate client and platform responsibilities for model access
-* Deploy Praxis AI Gateway with OpenShift security controls
-* Keep upstream model credentials away from application code
-* Invoke one gateway contract from Java, Python, and TypeScript
-* Correlate a request with exact routing evidence
-* Evaluate failure, isolation, retention, and audit trade-offs
-* Explain how OpenShift AI can replace the shared lab backend
+== Customer outcomes
 
-== Prerequisites
+* See a stable application interface in front of a replaceable model backend
+* Identify which responsibilities belong to the application, Praxis, and OpenShift
+* Prove that the upstream model credential does not enter application code
+* Correlate one visible request with its exact response evidence
+* Discuss failure, isolation, retention, and policy choices relevant to your environment
+* Identify where Red Hat OpenShift AI can replace the shared lab backend
 
-* A provisioned RHPDS OpenShift environment
-* The browser and embedded terminal supplied by Showroom
-* Familiarity with HTTP APIs; prior OpenShift experience is helpful but not required
+== Choose the depth
 
-== Time estimate
+* *Guided customer path:* governed access and application boundary, 20–30 minutes
+* *Operations depth:* correlation, failure ownership, and recovery, add 20–30 minutes
+* *Governance depth:* identity, data handling, evidence, and industry concerns, add 20–30 minutes
 
-Allow approximately 90 minutes for all three tracks. Track 1 can be completed independently in approximately 30–45 minutes.
+The solution architect will select optional modules based on customer discovery.
+Completing every page is not required to communicate the core value.
+
+== Environment
+
+The environment is already provisioned. You will exercise and inspect a
+reviewed deployment rather than spend the customer session installing
+infrastructure. Showroom provides an authenticated application tab, a
+namespace-scoped terminal, and an OpenShift Console tab.
 
 == Architecture
 
 image::architecture.svg[Praxis AI Gateway architecture with polyglot clients and replaceable model backends,link=self,window=_blank]
 
-The stable path is `application → Praxis → configured model backend`. Clients know only Praxis. Operators configure the backend URL, logical model, credentials, and routing policy on the gateway side.
+The stable path is `application → Praxis → configured model backend`.
+Applications know only the Praxis contract. Platform owners configure the
+backend URL, logical model, credentials, and gateway behavior.
 
 The dotted OpenShift AI path is the enterprise-aligned substitution point. Changing the backend must never require Java, Python, or TypeScript source changes.
 
-IMPORTANT: Do not enter confidential, personal, regulated, or proprietary information into the shared demonstration model.
+IMPORTANT: Do not enter confidential, personal, regulated, or proprietary
+information into the shared demonstration model.
 
 This lab is powered by Red Hat OpenShift running on {intel_platform} processors.

@@ -1,14 +1,17 @@
 = Govern AI Model Access with Praxis
 
-Stop duplicating model credentials, endpoints, and routing decisions across application teams. Build a governed AI access layer, observe how requests move through it, and apply controls for industry-sensitive workloads.
+Stop duplicating model credentials, endpoints, and provider-specific
+integrations across application teams. In this solution-architect-led
+experience, submit a live request through Praxis, prove the OpenShift credential
+and exposure boundaries, and map the pattern to your architecture.
 
 == What you will learn
 
 * Separate application and platform responsibilities for model access
-* Deploy Praxis AI Gateway on Red Hat OpenShift
-* Prove gateway-owned credential injection and backend portability
-* Correlate a learner request with routing evidence
-* Evaluate isolation, retention, and failure-policy trade-offs
+* Explain application, gateway, model-serving, and OpenShift responsibilities
+* Prove platform-owned credentials and a stable application contract
+* Correlate a visible result with the exact request identifier
+* Evaluate operations and governance choices relevant to your environment
 
 == Prerequisites
 
@@ -17,7 +20,8 @@ Stop duplicating model credentials, endpoints, and routing decisions across appl
 
 == Time estimate
 
-This lab takes approximately 90 minutes to complete.
+The guided customer path takes approximately 20–30 minutes. Optional operations
+and governance depth extends the experience to 60–90 minutes.
 
 == Technology
 

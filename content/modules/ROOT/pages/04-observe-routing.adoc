@@ -1,74 +1,82 @@
-= Track 2: Correlate evidence for the exact request
+= Correlate evidence for one request
 
-Networking demonstrations are difficult when learners see only a request and a response. As the platform operator, you need evidence that connects a visible topology, the selected logical model, and the exact request a learner just sent.
+This optional operations module addresses a common customer concern: how can a
+platform team explain the result of one known request without accidentally
+showing evidence from another user?
 
-== What you will learn
+== Customer outcome
 
-* Generate and recognize a W3C trace context
-* Relate learner-visible evidence to the gateway topology
-* Avoid substituting an unrelated latest trace
+* Recognize a W3C trace identifier
+* Correlate the learner-visible response with the exact submitted request
+* Distinguish request correlation from full distributed tracing
 
-== See: Evidence belongs to a request
+== Know: Evidence must belong to the request
 
-image::architecture.svg[Observable request path from the learner UI through Praxis,link=self,window=_blank]
+The learner UI creates a new W3C `traceparent` for every submission. It sends
+that context through Praxis and displays the trace ID with the returned model,
+HTTP status, and elapsed time.
 
-The learner UI creates a new W3C `traceparent` for every submission. It sends that value through Praxis and displays the trace identifier beside HTTP status, elapsed time, and returned model.
+This is safer than querying for a generic latest trace. In a shared platform,
+the latest event may belong to another request or tenant. The identifier
+created for the request being discussed must remain the correlation key.
 
-This is intentionally different from asking an observability system for its most recent trace. Under concurrent use, the newest trace might belong to another learner or another request. Evidence must be queried using the identifier created for the request being explained.
+The current lab proves request correlation only. It does not connect an
+OpenTelemetry collector and trace backend, so the generated ID is not evidence
+that every network hop produced a span.
 
-This release provides request correlation, not a completed distributed trace. A telemetry backend is intentionally not connected, so the lab must not describe a generated identifier as proof of every network hop. A later implementation can query OpenTelemetry and OpenShift observability with the same identifier without changing the client contract.
+== Show: Generate two distinct requests
 
-The UI never receives the upstream credential. It is a teaching surface for topology and sanitized request results, not an administrative console.
+Open the *App UI* and submit this prompt:
 
-== Do: Correlate a request
+[source,text]
+----
+Summarize the difference between authentication and authorization.
+----
 
-=== Step 1: Inspect trace generation
+Record the displayed trace ID, model, status, and elapsed time. Submit the same
+prompt again and confirm that the second request has a different trace ID.
 
-Read the small helper that creates the trace context and sends the request.
+The response text may vary. The evidence contract—unique trace ID and
+request-specific metadata—must remain stable.
+
+== Show: Confirm the operational topology
+
+Use the Terminal to inspect the gateway and UI workloads associated with the
+visible request path.
 
 [source,bash,role="execute",subs="attributes+"]
 ----
-cd ~/praxis-lab
-sed -n '1,75p' src/ui.py
+oc -n {project_name} get deployment praxis-ai praxis-ui
+oc -n {project_name} get service praxis-ai praxis-ui
+oc -n {project_name} get route praxis-ui
 ----
 
-Find the 32-character trace identifier, 16-character span identifier, and sampled flag in `new_traceparent`.
+Both deployments should be available. The UI has an authenticated Route;
+Praxis remains internal to the namespace.
 
-=== Step 2: Run the UI tests
+== Customer discussion
 
-The unit suite proves identifiers are unique and that the UI sends no authorization header.
+Ask which observability platform the customer uses and what evidence they need
+for model access. Separate these possible requirements:
 
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab
-python3 -m pytest tests/unit/test_ui.py -q
-----
+* request correlation;
+* gateway metrics and structured logs;
+* distributed traces across application, gateway, and backend;
+* prompt or response retention;
+* policy-decision evidence; and
+* usage or cost attribution.
 
-All UI tests should pass before you trust the visual evidence.
+These requirements have different privacy and retention implications. A trace
+identifier is generally safer than copying model content into every telemetry
+system.
 
-=== Step 3: Open the learner UI
+== Evidence
 
-The Track 1 deployment already runs the UBI-packaged Gradio UI. Obtain its edge-TLS address without exposing a model credential.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-oc -n {project_name} get route praxis-ui -o jsonpath='https://{.spec.host}{"\n"}'
-----
-
-Open the App UI tab and submit the provided example prompt. The mock profile uses edge TLS; the real-backend RHPDS profile upgrades this route to re-encrypt TLS and OpenShift OAuth. Record the returned trace ID and status.
-
-=== Verify
-
-Confirm that the topology names a configured backend rather than MaaS as a required component.
-
-[source,bash,role="execute",subs="attributes+"]
-----
-cd ~/praxis-lab
-rg -n 'Configured model backend|trace_id' src/ui.py
-----
-
-Both concepts should be present in the UI source.
+Two visible requests produced two distinct trace IDs and retained their own
+model, status, and timing metadata. No unrelated latest-event lookup was used.
 
 == Key takeaway
 
-Useful observability explains one known request and labels missing evidence honestly. This lab correlates one request with its response and topology. Full hop-by-hop tracing remains a future competency until a telemetry collector and backend are deployed and tested.
+The current lab demonstrates exact-request correlation. Full routing evidence
+and hop-by-hop tracing remain future capabilities until a telemetry backend is
+deployed and tested.

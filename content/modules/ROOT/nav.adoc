@@ -1,12 +1,12 @@
 * xref:index.adoc[Welcome]
-* xref:01-accessing-cluster.adoc[Access the environment]
-* Track 1: Establish governed access
-** xref:02-deploy-gateway.adoc[Verify and recover the gateway]
-** xref:03-prove-portability.adoc[Prove portability]
-* Track 2: Operate the platform
+* Guided customer path
+** xref:01-accessing-cluster.adoc[Orient to the experience]
+** xref:02-deploy-gateway.adoc[Show governed model access]
+** xref:03-prove-portability.adoc[Prove the application boundary]
+* Optional operations depth
 ** xref:04-observe-routing.adoc[Correlate request evidence]
-** xref:05-handle-failure.adoc[Handle failure]
-* Track 3: Apply governance
-** xref:06-isolate-data.adoc[Isolate tenants and data]
-** xref:07-assess-evidence.adoc[Assess industry evidence]
+** xref:05-handle-failure.adoc[Discuss failure and recovery]
+* Optional governance depth
+** xref:06-isolate-data.adoc[Assess isolation and data controls]
+** xref:07-assess-evidence.adoc[Map the customer architecture]
 * xref:08-conclusion.adoc[Conclusion]
