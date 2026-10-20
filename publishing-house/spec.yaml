@@ -34,10 +34,10 @@ spec:
       status: complete
   environment:
     platform: "ocp"
-    topology: "shared-tenant"
+    topology: "shared-cluster"
     cloud_provider: "cnv"
     max_concurrent_users: null
-    ocp_version: "4.20"
+    ocp_version: "4.22"  # Proposed target in AgnosticV #28083; infrastructure acceptance pending.
     cluster_type: "existing-shared"
     control_plane_instance_count: null
     control_plane_cpu: null
