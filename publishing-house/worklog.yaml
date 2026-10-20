@@ -1,4 +1,14 @@
 entries:
+  - date: "2026-10-20"
+    stage: development
+    summary: >-
+      Resumed under GPTEINFRA-18273 and existing AgnosticV PR 28083. Reconciled
+      the 20–30 minute guided path with optional depth up to 90 minutes,
+      normalized MaaS URLs, scoped teardown to owned configuration objects,
+      and added a real gateway completion check. Health/E2E remain in progress
+      until fresh-order evidence is accepted. RHDP source ownership, PH
+      reviewer route, cluster pairing, UI authentication, isolation, key
+      revocation and capacity remain explicit gates. No workflow stage changed.
   - date: "2026-09-11"
     stage: integration
     summary: >-

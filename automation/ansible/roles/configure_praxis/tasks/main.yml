@@ -3,17 +3,24 @@
   ansible.builtin.assert:
     that:
       - ACTION | default('provision') in ['provision', 'destroy']
+      - praxis_lab_namespace is match('^user-[a-z0-9][a-z0-9-]*-praxis$')
     fail_msg: "ACTION must be provision or destroy"
 
-- name: Remove the Praxis lab namespace
+# The tenant namespace workload owns namespace deletion. This role removes only
+# the configuration objects it created, after GitOps removal has stopped pods.
+- name: Remove Praxis configuration objects
   kubernetes.core.k8s:
     api_version: v1
-    kind: Namespace
-    name: "{{ praxis_lab_namespace }}"
+    kind: "{{ item.kind }}"
+    name: "{{ item.name }}"
+    namespace: "{{ praxis_lab_namespace }}"
     state: absent
-    wait: true
-    wait_timeout: 300
+  loop:
+    - {kind: Secret, name: model-backend-credentials}
+    - {kind: Secret, name: praxis-ui-proxy-cookie}
+    - {kind: ConfigMap, name: praxis-ai-config}
   when: ACTION | default('provision') == 'destroy'
+  no_log: true
 
 - name: Provision the Praxis runtime boundary
   when: ACTION | default('provision') == 'provision'
@@ -43,6 +50,9 @@
         that:
           - praxis_backend_scheme in ['http', 'https']
           - praxis_backend_host | length > 0
+          - not (praxis_model_base_url | urlsplit('username'))
+          - not (praxis_model_base_url | urlsplit('query'))
+          - not (praxis_model_base_url | urlsplit('fragment'))
           - (praxis_model_base_url | urlsplit('path')) in ['', '/', '/v1', '/v1/']
         fail_msg: "The MaaS endpoint must contain only http(s), host, optional port, and optional /v1"
 

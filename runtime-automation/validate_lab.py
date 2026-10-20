@@ -1,9 +1,13 @@
 """Static preflight for the generated Praxis Showroom lab."""
 
 import re
+import subprocess
+import json
 from pathlib import Path
 
 import yaml
+from jinja2 import Environment, StrictUndefined
+from ansible.plugins.filter.core import FilterModule
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +97,16 @@ require("https://github.com/rhpds/rhpds.litellm_virtual_keys.git" in catalog_tex
 require(workloads.index("agnosticd.namespaced_workloads.ocp4_workload_tenant_keycloak_user") < workloads.index("agnosticd.namespaced_workloads.ocp4_workload_tenant_namespace") < workloads.index(virtual_key_workload) < workloads.index("praxis_ai_gateway.automation.configure_praxis") < workloads.index("agnosticd.core_workloads.ocp4_workload_gitops_bootstrap") < workloads.index("agnosticd.showroom.ocp4_workload_showroom"), "invalid tenant workload order")
 require(virtual_key_workload in catalog["remove_workloads"], "LiteMaaS virtual key cleanup is required")
 require(catalog["ocp4_workload_litellm_virtual_keys_models"] == ["{{ praxis_model_name }}"], "Praxis and LiteMaaS must select the same model variable")
-require(catalog["praxis_model_base_url"] == "{{ litellm_api_endpoint }}/v1", "Praxis must consume the generated LiteMaaS endpoint")
+# Exercise the actual catalog expression with Ansible's filters. Endpoint
+# allocation may return either an origin or an API base ending in /v1.
+endpoint_template = Environment(undefined=StrictUndefined)
+endpoint_template.filters.update(FilterModule().filters())
+for endpoint in ("https://models.example.test", "https://models.example.test/",
+                 "https://models.example.test/v1", "https://models.example.test/v1/"):
+    rendered = endpoint_template.from_string(catalog["praxis_model_base_url"]).render(
+        litellm_api_endpoint=endpoint)
+    require(rendered == "https://models.example.test/v1",
+            "Praxis backend URL must contain exactly one /v1")
 require(catalog["praxis_model_api_key"] == "{{ litellm_virtual_key }}", "Praxis must consume the generated virtual key")
 showroom_ui = yaml.safe_load(catalog["ocp4_workload_showroom_content_ui_config"])
 require(all(tab.get("url") or tab.get("port") for tab in showroom_ui["tabs"]), "every deployed Showroom tab must define a URL or port")
@@ -123,8 +136,27 @@ require(catalog["ocp4_workload_gitops_bootstrap_helm_values"]["namespace"] == "{
 
 spec = yaml.safe_load((ROOT / "publishing-house/spec.yaml").read_text())
 require(spec["project"]["deployment_mode"] == "rhdp_published", "invalid Publishing House deployment mode")
-require(spec["spec"]["environment"]["topology"] == "shared-tenant", "Publishing House topology must be shared-tenant")
+require(spec["spec"]["environment"]["topology"] == "shared-cluster", "Publishing House topology must match the shared-cluster tenant deployment")
 require(spec["spec"]["environment"]["gpu_nodes"] == 0, "the Praxis lab must not allocate a local GPU")
 require(spec["spec"]["environment"]["ai_requirement"] == "maas", "MaaS must remain the replaceable model access mechanism")
+
+# Check the rendered runtime contract, not a literal template expression.
+rendered = subprocess.check_output([
+    "helm", "template", "preflight", str(ROOT / "automation/gitops/praxis"),
+    "--set", "namespace=user-preflight-praxis"], text=True)
+objects = [item for item in yaml.safe_load_all(rendered) if item]
+gateway_deployment = next(x for x in objects if x["kind"] == "Deployment" and x["metadata"]["name"] == "praxis-ai")
+gateway_container = gateway_deployment["spec"]["template"]["spec"]["containers"][0]
+for probe in ("readinessProbe", "livenessProbe"):
+    require(gateway_container[probe].get("tcpSocket", {}).get("port") == "http",
+            "Gateway probes must use its configured listener; no 9901 admin server is configured")
+ui_deployment = next(x for x in objects if x["kind"] == "Deployment" and x["metadata"]["name"] == "praxis-ui")
+proxy = next(x for x in ui_deployment["spec"]["template"]["spec"]["containers"] if x["name"] == "oauth-proxy")
+sar = next(arg.split("=", 1)[1] for arg in proxy["args"] if arg.startswith("--openshift-sar="))
+require(json.loads(sar) == {"namespace": "user-preflight-praxis", "resource": "services", "resourceName": "praxis-ui", "verb": "get"},
+        "OAuth login must require access to the assigned tenant service")
+ui_policy = next(x for x in objects if x["kind"] == "NetworkPolicy" and x["metadata"]["name"] == "praxis-ui-allow-required-traffic")
+egress_ports = {p["port"] for rule in ui_policy["spec"]["egress"] for p in rule.get("ports", [])}
+require({443, 6443} <= egress_ports, "OAuth/API traffic must not be blocked by the UI egress policy")
 
 print(f"LAB PREFLIGHT: GREEN ({len(MODULES)} hands-on modules)")

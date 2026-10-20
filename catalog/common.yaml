@@ -86,7 +86,7 @@ ocp4_workload_litellm_virtual_keys_enable_user_info_messages: false
 ocp4_workload_litellm_virtual_keys_enable_user_info_data: false
 
 praxis_lab_namespace: "user-{{ guid }}-praxis"
-praxis_model_base_url: "{{ litellm_api_endpoint }}/v1"
+praxis_model_base_url: "{{ litellm_api_endpoint | regex_replace('/+$', '') | regex_replace('/v1$', '') }}/v1"
 praxis_model_api_key: "{{ litellm_virtual_key }}"
 
 # The shared cluster already provides OpenShift GitOps. No credentials are
