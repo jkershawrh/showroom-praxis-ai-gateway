@@ -4,6 +4,7 @@
   gather_facts: false
   vars:
     praxis_lab_namespace: "user-{{ guid }}-praxis"
+    praxis_test_model: granite-3-2-8b-instruct
   tasks:
     - name: Read learner UI route
       kubernetes.core.k8s_info:
@@ -37,12 +38,60 @@
         namespace: "{{ praxis_lab_namespace }}"
       register: praxis_deployment
 
+    - name: Select the backend credential by environment variable name
+      ansible.builtin.set_fact:
+        praxis_key_env: >-
+          {{ praxis_deployment.resources[0].spec.template.spec.containers
+             | selectattr('name', 'equalto', 'praxis-ai') | map(attribute='env') | first
+             | selectattr('name', 'equalto', 'MODEL_API_KEY') | list }}
+      no_log: true
+
     - name: Assert credential is referenced rather than embedded
       ansible.builtin.assert:
         that:
-          - >-
-            praxis_deployment.resources[0].spec.template.spec.containers[0].env[0].valueFrom.secretKeyRef.name
-            == 'model-backend-credentials'
-          - >-
-            praxis_deployment.resources[0].spec.template.spec.containers[0].env[0].value
-            is not defined
+          - praxis_key_env | length == 1
+          - praxis_key_env[0].valueFrom.secretKeyRef.name == 'model-backend-credentials'
+          - praxis_key_env[0].valueFrom.secretKeyRef.key == 'api-key'
+          - praxis_key_env[0].value is not defined
+      no_log: true
+
+    # This exercises the gateway and its injected backend credential without
+    # exporting the key. It is separate from the browser OAuth learner test.
+    - name: Find a running gateway pod
+      kubernetes.core.k8s_info:
+        api_version: v1
+        kind: Pod
+        namespace: "{{ praxis_lab_namespace }}"
+        label_selectors:
+          - app.kubernetes.io/name=praxis-ai
+        field_selectors:
+          - status.phase=Running
+      register: praxis_pods
+
+    - name: Require an available gateway pod
+      ansible.builtin.assert:
+        that:
+          - praxis_pods.resources | length > 0
+
+    - name: Submit a synthetic inference request through the internal gateway
+      kubernetes.core.k8s_exec:
+        namespace: "{{ praxis_lab_namespace }}"
+        pod: "{{ praxis_pods.resources[0].metadata.name }}"
+        container: praxis-ai
+        command: >-
+          wget -qO- --header='Content-Type: application/json'
+          --post-data='{{ {"model": praxis_test_model,
+            "messages": [{"role": "user", "content": "Reply with one short greeting."}],
+            "max_tokens": 32, "stream": false} | to_json }}'
+          http://127.0.0.1:8080/v1/chat/completions
+      register: praxis_inference
+      no_log: true
+
+    - name: Require a real completion without a gateway or backend error
+      ansible.builtin.assert:
+        that:
+          - praxis_inference.return_code == 0
+          - (praxis_inference.stdout | from_json).error is not defined
+          - (praxis_inference.stdout | from_json).choices | length > 0
+          - (praxis_inference.stdout | from_json).choices[0].message.content | default('') | trim | length > 0
+      no_log: true

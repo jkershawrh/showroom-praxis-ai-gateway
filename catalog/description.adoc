@@ -28,7 +28,7 @@ and governance depth extends the experience to 60–90 minutes.
 * Red Hat OpenShift
 * Red Hat OpenShift AI integration path
 * Praxis AI Gateway upstream project
-* Powered by Intel Xeon processors
+* Backend hardware placement requires infrastructure-owner verification
 
 == Support
 

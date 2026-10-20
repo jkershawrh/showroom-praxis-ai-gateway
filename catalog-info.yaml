@@ -4,7 +4,7 @@ metadata:
   name: praxis-ai-gateway
   title: Praxis AI Gateway Lab
   description: >-
-    A three-track RHDP lab for deploying, observing, and evaluating Praxis AI
+    A progressive RHDP lab with a 20–30 minute guided path and optional depth for deploying, observing, and evaluating Praxis AI
     Gateway on Red Hat OpenShift with a replaceable MaaS backend.
   annotations:
     ph.rhdp.io/content-type: lab
@@ -20,6 +20,9 @@ metadata:
     - praxis
     - ai-gateway
   links:
+    - url: https://issues.redhat.com/browse/GPTEINFRA-18273
+      title: RHDP onboarding
+      icon: dashboard
     - url: https://github.com/jkershawrh/showroom-praxis-ai-gateway
       title: Repository
       icon: github
