@@ -4,6 +4,8 @@ import re
 from pathlib import Path
 
 import yaml
+from jinja2 import Environment, StrictUndefined
+from ansible.plugins.filter.core import FilterModule
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -93,7 +95,16 @@ require("https://github.com/rhpds/rhpds.litellm_virtual_keys.git" in catalog_tex
 require(workloads.index("agnosticd.namespaced_workloads.ocp4_workload_tenant_keycloak_user") < workloads.index("agnosticd.namespaced_workloads.ocp4_workload_tenant_namespace") < workloads.index(virtual_key_workload) < workloads.index("praxis_ai_gateway.automation.configure_praxis") < workloads.index("agnosticd.core_workloads.ocp4_workload_gitops_bootstrap") < workloads.index("agnosticd.showroom.ocp4_workload_showroom"), "invalid tenant workload order")
 require(virtual_key_workload in catalog["remove_workloads"], "LiteMaaS virtual key cleanup is required")
 require(catalog["ocp4_workload_litellm_virtual_keys_models"] == ["{{ praxis_model_name }}"], "Praxis and LiteMaaS must select the same model variable")
-require(catalog["praxis_model_base_url"] == "{{ litellm_api_endpoint }}/v1", "Praxis must consume the generated LiteMaaS endpoint")
+# Exercise the actual catalog expression with Ansible's filters. Endpoint
+# allocation may return either an origin or an API base ending in /v1.
+endpoint_template = Environment(undefined=StrictUndefined)
+endpoint_template.filters.update(FilterModule().filters())
+for endpoint in ("https://models.example.test", "https://models.example.test/",
+                 "https://models.example.test/v1", "https://models.example.test/v1/"):
+    rendered = endpoint_template.from_string(catalog["praxis_model_base_url"]).render(
+        litellm_api_endpoint=endpoint)
+    require(rendered == "https://models.example.test/v1",
+            "Praxis backend URL must contain exactly one /v1")
 require(catalog["praxis_model_api_key"] == "{{ litellm_virtual_key }}", "Praxis must consume the generated virtual key")
 showroom_ui = yaml.safe_load(catalog["ocp4_workload_showroom_content_ui_config"])
 require(all(tab.get("url") or tab.get("port") for tab in showroom_ui["tabs"]), "every deployed Showroom tab must define a URL or port")
@@ -123,7 +134,7 @@ require(catalog["ocp4_workload_gitops_bootstrap_helm_values"]["namespace"] == "{
 
 spec = yaml.safe_load((ROOT / "publishing-house/spec.yaml").read_text())
 require(spec["project"]["deployment_mode"] == "rhdp_published", "invalid Publishing House deployment mode")
-require(spec["spec"]["environment"]["topology"] == "shared-tenant", "Publishing House topology must be shared-tenant")
+require(spec["spec"]["environment"]["topology"] == "shared-cluster", "Publishing House topology must match the shared-cluster tenant deployment")
 require(spec["spec"]["environment"]["gpu_nodes"] == 0, "the Praxis lab must not allocate a local GPU")
 require(spec["spec"]["environment"]["ai_requirement"] == "maas", "MaaS must remain the replaceable model access mechanism")
 
