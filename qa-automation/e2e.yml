@@ -16,7 +16,7 @@
 
     - name: Request learner UI without an OAuth session
       ansible.builtin.uri:
-        url: "https://{{ ui_route.resources[0].spec.host }}/"
+        url: "https://{{ ui_route.resources[0].spec.host }}/oauth/start"
         method: GET
         follow_redirects: none
         validate_certs: true

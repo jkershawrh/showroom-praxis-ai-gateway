@@ -37,14 +37,16 @@ spec:
           ports:
             - name: http
               containerPort: 8080
+          # This pinned gateway exposes the configured 8080 listener; no admin
+          # listener is configured on 9901. Real inference is checked by E2E.
           readinessProbe:
-            exec:
-              command: ["wget", "-qO-", "http://127.0.0.1:9901/healthy"]
+            tcpSocket:
+              port: http
             initialDelaySeconds: 2
             periodSeconds: 5
           livenessProbe:
-            exec:
-              command: ["wget", "-qO-", "http://127.0.0.1:9901/healthy"]
+            tcpSocket:
+              port: http
             initialDelaySeconds: 5
             periodSeconds: 10
           resources:
@@ -93,20 +95,6 @@ metadata:
   annotations:
     serviceaccounts.openshift.io/oauth-redirectreference.primary: >-
       {"kind":"OAuthRedirectReference","apiVersion":"v1","reference":{"kind":"Route","name":"praxis-ui"}}
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: praxis-ui-auth-delegator
-  namespace: {{ .Values.namespace | quote }}
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:auth-delegator
-subjects:
-  - kind: ServiceAccount
-    name: praxis-ui
-    namespace: {{ .Values.namespace | quote }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -177,9 +165,16 @@ spec:
             - --tls-key=/etc/tls/private/tls.key
             - --cookie-secret-file=/etc/proxy/secrets/session_secret
             - --email-domain=*
+            - {{ printf "--openshift-sar=%s" (dict "namespace" .Values.namespace "resource" "services" "resourceName" "praxis-ui" "verb" "get" | toJson) | quote }}
           ports:
             - name: oauth
               containerPort: 8443
+          readinessProbe:
+            httpGet:
+              path: /oauth/healthz
+              port: oauth
+              scheme: HTTPS
+            initialDelaySeconds: 5
           resources:
             requests:
               cpu: 10m
@@ -306,6 +301,13 @@ spec:
       ports:
         - protocol: TCP
           port: 8080
+    # OAuth discovery and namespace authorization need the Kubernetes API
+    # (service port 443, translated control-plane port 6443) and OAuth HTTPS.
+    - ports:
+        - protocol: TCP
+          port: 443
+        - protocol: TCP
+          port: 6443
     - ports:
         - protocol: UDP
           port: 53
